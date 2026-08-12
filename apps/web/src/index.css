@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --color-brand-bg: #090715;
+  --color-brand-card: #141125;
+  --color-brand-card-hover: #1b1732;
+  --color-brand-primary: #7C3AED;
+  --color-brand-secondary: #10B981;
+  --color-brand-accent: #3B82F6;
+  --color-brand-text: #E5E7EB;
+  --color-brand-text-muted: #9CA3AF;
+  --color-brand-border: #2D2849;
+}
+
+body {
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  margin: 0;
+}
+
+/* Custom Gradients & Utilities */
+.bg-gradient-pro {
+  background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%);
+}
+
+.glass-card {
+  background-color: #141125;
+  border: 1px solid #2D2849;
+  border-radius: 1rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2D2849;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}

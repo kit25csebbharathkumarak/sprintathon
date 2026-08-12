@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Tenant {
+  id              String    @id @default(uuid())
+  name            String
+  routingStrategy String    @default("SHARED") // "SHARED" or "DEDICATED"
+  schema          String    @default("public")
+
+  // Business Profile Fields
+  employeeCount   Int?
+  numberOfBranches Int?
+  annualTurnover  Float?
+  gstin           String?
+  businessType    String?
+  dataSensitivity String    @default("STANDARD") // "STANDARD", "HIGH", "STRICT"
+  expectedTxVolume Int?
+  enterpriseRequirements String?
+  
+  users           User[]
+  expenses        Expense[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  
+  tenantId  String
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  
+  expenses  Expense[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Expense {
+  id            String    @id @default(uuid())
+  tenantId      String
+  userId        String
+  
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+  
+  amount        Float
+  currency      String    @default("USD")
+  vendor        String
+  category      String?
+  date          DateTime
+
+  receiptUrl    String?
+  status        String    @default("PENDING") // PENDING, APPROVED, FLAGGED
+  anomalyScore  Float?
+
+  eventHash     String?   @unique
+  prevEventHash String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
