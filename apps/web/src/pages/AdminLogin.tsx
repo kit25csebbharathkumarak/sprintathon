@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, ArrowLeft, Settings, Users, Activity } from 'lucide-react';
+import { ArrowLeft, Settings, Users, Activity } from 'lucide-react';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
