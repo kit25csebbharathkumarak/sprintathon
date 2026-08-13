@@ -9,7 +9,7 @@ export class AIService {
 
   private async generateContentWithFallback(prompt: any, config?: any) {
     try {
-      const modelName = 'gemini-flash-latest';
+      const modelName = 'gemini-3.6-flash';
       const model = this.ai.getGenerativeModel({ 
         model: modelName,
         generationConfig: config ? {
