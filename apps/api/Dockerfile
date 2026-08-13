@@ -1,5 +1,9 @@
 # ---- Build Stage ----
-FROM node:20-alpine AS builder
+# Use node:20-slim (Debian-based) — Alpine lacks OpenSSL which Prisma requires
+FROM node:20-slim AS builder
+
+# Install OpenSSL for Prisma schema engine
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -22,7 +26,10 @@ RUN npx prisma generate
 RUN npm run build
 
 # ---- Production Stage ----
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
+
+# Install OpenSSL for Prisma at runtime too
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
