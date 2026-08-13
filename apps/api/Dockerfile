@@ -51,5 +51,5 @@ WORKDIR /app/apps/api
 
 EXPOSE 10000
 
-# Run DB migrations then start server
-CMD npx prisma migrate deploy && node dist/server.js
+# Run DB sync then start server
+CMD npx prisma db push --accept-data-loss && node dist/server.js
