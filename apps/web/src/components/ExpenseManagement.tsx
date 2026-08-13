@@ -91,33 +91,43 @@ function ExpenseModal({ expense, onClose, onSaved }: { expense?: any, onClose: (
     try {
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64String = reader.result;
-        
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE}/api/v1/expenses/ocr`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ receiptUrl: base64String })
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setFormData(prev => ({
-            ...prev,
-            amount: data.amount ? String(data.amount) : prev.amount,
-            vendor: data.vendor && data.vendor !== 'Unknown' ? data.vendor : prev.vendor,
-            category: data.category && data.category !== 'Other' ? data.category : prev.category
-          }));
+        try {
+          const base64String = reader.result;
+          
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${API_BASE}/api/v1/expenses/ocr`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ receiptUrl: base64String })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            setFormData(prev => ({
+              ...prev,
+              amount: data.amount ? String(data.amount) : prev.amount,
+              vendor: data.vendor && data.vendor !== 'Unknown' ? data.vendor : prev.vendor,
+              category: data.category && data.category !== 'Other' ? data.category : prev.category
+            }));
+          } else {
+            console.error('OCR API returned an error:', response.status);
+            alert('Failed to scan receipt. Please enter details manually.');
+          }
+        } catch (innerErr) {
+          console.error('Error during OCR fetch:', innerErr);
+          alert('Network error while scanning receipt. Please try again.');
+        } finally {
+          setIsScanning(false);
         }
-        setIsScanning(false);
       };
       reader.readAsDataURL(file);
     } catch (err) {
-      console.error(err);
+      console.error('Error reading file:', err);
       setIsScanning(false);
+      alert('Error reading the file.');
     }
   };
 

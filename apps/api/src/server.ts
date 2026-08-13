@@ -5,7 +5,7 @@ import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import { authRoutes } from './modules/auth/auth.routes';
 
-const server = fastify({ logger: true });
+const server = fastify({ logger: true, bodyLimit: 10485760 }); // 10MB limit for high-res receipt uploads
 
 // Register CORS
 server.register(fastifyCors, {
