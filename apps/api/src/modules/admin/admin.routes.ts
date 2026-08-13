@@ -136,4 +136,79 @@ export async function adminRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ error: e.message });
     }
   });
+
+  // GET /api/v1/admin/transactions
+  fastify.get('/transactions', async (request, reply) => {
+    try {
+      const expenses = await prisma.expense.findMany({
+        orderBy: { date: 'desc' },
+        take: 50,
+        include: {
+          user: { select: { name: true, email: true } },
+          tenant: { select: { name: true } }
+        }
+      });
+      return reply.send({ transactions: expenses });
+    } catch (e: any) {
+      fastify.log.error(e);
+      return reply.status(500).send({ error: e.message });
+    }
+  });
+
+  // GET /api/v1/admin/reports
+  fastify.get('/reports', async (request, reply) => {
+    try {
+      const spendByCategoryRaw = await prisma.expense.groupBy({
+        by: ['category'],
+        _sum: { amount: true }
+      });
+      const spendByCategory = spendByCategoryRaw.map(s => {
+        return {
+          name: s.category ? s.category : 'Unknown',
+          value: s._sum.amount || 0
+        };
+      });
+
+      const spendByStatusRaw = await prisma.expense.groupBy({
+        by: ['status'],
+        _count: { id: true }
+      });
+      const spendByStatus = spendByStatusRaw.map(s => ({
+        name: s.status,
+        value: s._count.id
+      }));
+
+      const expenses = await prisma.expense.findMany({ select: { date: true, amount: true } });
+      const monthlyDataMap: Record<string, number> = {};
+      expenses.forEach(e => {
+        const month = e.date.toLocaleString('default', { month: 'short' });
+        monthlyDataMap[month] = (monthlyDataMap[month] || 0) + e.amount;
+      });
+      const monthlyVolume = Object.entries(monthlyDataMap).map(([name, volume]) => ({ name, volume }));
+
+      return reply.send({ spendByCategory, spendByStatus, monthlyVolume });
+    } catch (e: any) {
+      fastify.log.error(e);
+      return reply.status(500).send({ error: e.message });
+    }
+  });
+
+  // GET /api/v1/admin/audit
+  fastify.get('/audit', async (request, reply) => {
+    try {
+      const recentUsers = await prisma.user.findMany({ orderBy: { createdAt: 'desc' }, take: 20, include: { tenant: true } });
+      const recentTenants = await prisma.tenant.findMany({ orderBy: { createdAt: 'desc' }, take: 20 });
+      
+      const logs: any[] = [];
+      recentUsers.forEach(u => logs.push({ id: `user-${u.id}`, action: 'USER_CREATED', details: `New user ${u.name} registered under ${u.tenant.name}`, timestamp: u.createdAt }));
+      recentTenants.forEach(t => logs.push({ id: `tenant-${t.id}`, action: 'TENANT_CREATED', details: `New tenant ${t.name} created`, timestamp: t.createdAt }));
+      
+      logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      return reply.send({ auditLogs: logs.slice(0, 30) });
+    } catch (e: any) {
+      fastify.log.error(e);
+      return reply.status(500).send({ error: e.message });
+    }
+  });
 }

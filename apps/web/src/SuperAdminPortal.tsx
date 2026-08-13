@@ -6,13 +6,17 @@ import {
 } from 'lucide-react';
 import { 
   LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, 
-  XAxis, YAxis, CartesianGrid 
+  XAxis, YAxis, CartesianGrid, BarChart, Bar 
 } from 'recharts';
 
 export default function SuperAdminPortal({ onLogout }: { onLogout: () => void }) {
   const [activeTab, setActiveTab] = useState('Overview');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [reportsData, setReportsData] = useState<any>(null);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [tabLoading, setTabLoading] = useState(false);
 
   // Modals state
   const [isTenantModalOpen, setIsTenantModalOpen] = useState(false);
@@ -53,6 +57,32 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchTab = async () => {
+      try {
+        setTabLoading(true);
+        if (activeTab === 'Transactions' && transactions.length === 0) {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/admin/transactions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
+          const json = await res.json();
+          setTransactions(json.transactions || []);
+        } else if (activeTab === 'Reports' && !reportsData) {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/admin/reports`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
+          const json = await res.json();
+          setReportsData(json);
+        } else if (activeTab === 'AuditLogs' && auditLogs.length === 0) {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/admin/audit`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
+          const json = await res.json();
+          setAuditLogs(json.auditLogs || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setTabLoading(false);
+      }
+    };
+    fetchTab();
+  }, [activeTab]);
 
   const handleCreateTenant = async () => {
     if (!newTenantName) return;
@@ -536,7 +566,129 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
             </div>
           )}
 
-          {activeTab !== 'Overview' && activeTab !== 'Tenants' && (
+          {activeTab === 'Transactions' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '100%' }}>
+              <div>
+                <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>Platform Transactions</h2>
+                <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>View all platform expenses across all tenants.</p>
+              </div>
+              <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', flex: 1 }}>
+                {tabLoading ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading transactions...</div>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Date</th>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Tenant</th>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>User</th>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Category</th>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Status</th>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500, textAlign: 'right' }}>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((tx: any) => (
+                        <tr key={tx.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{new Date(tx.date).toLocaleDateString()}</td>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{tx.tenant?.name || 'Unknown'}</td>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{tx.user?.name || tx.user?.email}</td>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{tx.category || 'Other'}</td>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem' }}>
+                            <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: tx.status === 'APPROVED' ? '#d1fae5' : tx.status === 'PENDING' ? '#fef3c7' : '#fee2e2', color: tx.status === 'APPROVED' ? '#10b981' : tx.status === 'PENDING' ? '#d97706' : '#ef4444', fontWeight: 500, fontSize: '0.75rem' }}>{tx.status}</span>
+                          </td>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 600, textAlign: 'right' }}>₹{tx.amount.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                      {transactions.length === 0 && (
+                        <tr><td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#94a3b8' }}>No transactions found.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Reports' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '100%' }}>
+              <div>
+                <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>Analytics & Reports</h2>
+                <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Advanced insights across the platform.</p>
+              </div>
+              
+              {tabLoading || !reportsData ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading reports...</div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                  <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 20px 0' }}>Spend by Category</h3>
+                    <div style={{ height: '300px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={reportsData.spendByCategory} cx="50%" cy="50%" outerRadius={100} label={(entry) => entry.name} dataKey="value">
+                            {reportsData.spendByCategory.map((_: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'][index % 5]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: any) => `₹${value.toLocaleString()}`} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 20px 0' }}>Monthly Volume</h3>
+                    <div style={{ height: '300px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={reportsData.monthlyVolume}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                          <Tooltip formatter={(value: any) => `₹${value.toLocaleString()}`} cursor={{ fill: '#f1f5f9' }} />
+                          <Bar dataKey="volume" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'AuditLogs' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '100%' }}>
+              <div>
+                <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>Audit Logs</h2>
+                <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Timeline of recent platform events.</p>
+              </div>
+              <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', flex: 1 }}>
+                {tabLoading ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading logs...</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {auditLogs.map((log: any) => (
+                      <div key={log.id} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#64748b' }}>
+                          <FileSearch size={20} />
+                        </div>
+                        <div style={{ paddingBottom: '20px', borderBottom: '1px solid #f1f5f9', flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1e293b' }}>{log.action}</span>
+                            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{new Date(log.timestamp).toLocaleString()}</span>
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{log.details}</div>
+                        </div>
+                      </div>
+                    ))}
+                    {auditLogs.length === 0 && <div style={{ textAlign: 'center', color: '#94a3b8', padding: '32px' }}>No audit logs found.</div>}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab !== 'Overview' && activeTab !== 'Tenants' && activeTab !== 'Transactions' && activeTab !== 'Reports' && activeTab !== 'AuditLogs' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '400px', color: '#64748b' }}>
               <Settings size={48} color="#e2e8f0" style={{ marginBottom: '16px' }} />
               <h2 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>{activeTab} Module</h2>
