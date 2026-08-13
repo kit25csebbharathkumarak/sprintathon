@@ -9,7 +9,7 @@ export class AIService {
 
   private async generateContentWithFallback(prompt: any, config?: any) {
     try {
-      const modelName = 'gemini-2.5-flash';
+      const modelName = 'gemini-flash-latest';
       const model = this.ai.getGenerativeModel({ 
         model: modelName,
         generationConfig: config ? {
@@ -21,7 +21,8 @@ export class AIService {
       const response = await model.generateContent(prompt);
       return response.response.text();
     } catch (e: any) {
-      throw new Error(`[gemini-2.5-flash] ${e.message}`);
+      console.error(`AI Model Error:`, e);
+      throw new Error(e.message);
     }
   }
 
