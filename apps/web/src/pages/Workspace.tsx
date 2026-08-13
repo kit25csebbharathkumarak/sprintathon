@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, CreditCard, Users, Shield, Building2, 
-  BrainCircuit, FileSearch, Settings, LogOut, Network
+  BrainCircuit, FileSearch, Settings, LogOut, Network,
+  FileText, BarChart, PieChart
 } from 'lucide-react';
 
 import ExecutiveDashboard from '../components/ExecutiveDashboard';
@@ -125,14 +126,17 @@ export default function Workspace() {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard }, 
-    { id: 'expenses', label: 'Expense Management', icon: CreditCard }, 
-    { id: 'employees', label: 'Employee Directory', icon: Users },
-    { id: 'policies', label: 'Policy Engine', icon: Shield },
-    { id: 'vendors', label: 'Vendor Directory', icon: Building2 },
-    { id: 'copilot', label: 'AI Expense Copilot', icon: BrainCircuit }, 
-    { id: 'audit', label: 'Tamper Hash Audit', icon: FileSearch },
-    { id: 'tenancy', label: 'Routing Strategy', icon: Network }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }, 
+    { id: 'expenses', label: 'Expenses', icon: CreditCard }, 
+    { id: 'reports', label: 'Reports', icon: FileText }, 
+    { id: 'analytics', label: 'Analytics', icon: BarChart }, 
+    { id: 'budgets', label: 'Budgets', icon: PieChart }, 
+    { id: 'employees', label: 'Employees', icon: Users },
+    { id: 'policies', label: 'Policies', icon: Shield },
+    { id: 'vendors', label: 'Vendors', icon: Building2 },
+    { id: 'copilot', label: 'AI Copilot', icon: BrainCircuit }, 
+    { id: 'audit', label: 'Audit Log', icon: FileSearch },
+    { id: 'tenancy', label: 'Tenancy Routing', icon: Network }
   ];
 
   if (!token || !activeTenant) return null;
@@ -218,6 +222,28 @@ export default function Workspace() {
           {activeTab === 'employees' && <EmployeeManagement />}
           {activeTab === 'policies' && <PolicyEngine />}
           {activeTab === 'vendors' && <VendorManagement />}
+          
+          {activeTab === 'reports' && (
+            <div className="glass-panel" style={{ padding: '64px', textAlign: 'center' }}>
+              <FileText size={48} color="var(--text-muted)" style={{ marginBottom: '16px' }} />
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Reports</h3>
+              <p style={{ color: 'var(--text-secondary)' }}>Advanced reporting module coming in Phase 2.</p>
+            </div>
+          )}
+          {activeTab === 'analytics' && (
+            <div className="glass-panel" style={{ padding: '64px', textAlign: 'center' }}>
+              <BarChart size={48} color="var(--text-muted)" style={{ marginBottom: '16px' }} />
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Analytics</h3>
+              <p style={{ color: 'var(--text-secondary)' }}>Predictive analytics and ML insights coming in Phase 2.</p>
+            </div>
+          )}
+          {activeTab === 'budgets' && (
+            <div className="glass-panel" style={{ padding: '64px', textAlign: 'center' }}>
+              <PieChart size={48} color="var(--text-muted)" style={{ marginBottom: '16px' }} />
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Budgets</h3>
+              <p style={{ color: 'var(--text-secondary)' }}>Departmental budget tracking coming in Phase 2.</p>
+            </div>
+          )}
 
           {/* AI Copilot Tab */}
           {activeTab === 'copilot' && (
