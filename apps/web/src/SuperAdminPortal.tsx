@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { 
   Home, Building2, Users, CreditCard, Receipt, BarChart3, Activity, 
-  ArrowRightLeft, Tags, FileText, ShieldCheck, Link, Settings, Bell, 
-  Calendar, MoreHorizontal, ArrowUpRight, CheckCircle2, Plus, Eye, 
-  Search, ArrowRight, User, FilePlus, ArrowDownRight
+  ArrowRightLeft, Tags, FileText, Link, Settings, Bell, 
+  Calendar, MoreHorizontal, ArrowUpRight, CheckCircle2, 
+  Search, ArrowRight, User, FilePlus, ArrowDownRight, FileSearch
 } from 'lucide-react';
 import { 
   LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, 
