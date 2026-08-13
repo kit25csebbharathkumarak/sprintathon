@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { API_BASE } from '../lib/api';
 
 export default function EnterpriseLogin() {
   const [email, setEmail] = useState('');
@@ -15,7 +16,7 @@ export default function EnterpriseLogin() {
     setIsLoading(true);
     
     try {
-      const res = await fetch('http://localhost:3001/api/v1/auth/login', {
+      const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

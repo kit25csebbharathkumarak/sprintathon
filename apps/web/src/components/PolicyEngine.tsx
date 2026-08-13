@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Shield, Plus, AlertCircle, Edit3, Settings2, Trash2 } from 'lucide-react';
+import { API_BASE } from '../lib/api';
 
 export default function PolicyEngine() {
   const [policies, setPolicies] = useState<any[]>([]);
@@ -8,7 +9,7 @@ export default function PolicyEngine() {
 
   const fetchPolicies = () => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:3001/api/v1/policies', {
+    fetch(`${API_BASE}/api/v1/policies`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -30,7 +31,7 @@ export default function PolicyEngine() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this policy?')) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:3001/api/v1/policies/${id}`, {
+    await fetch(`${API_BASE}/api/v1/policies/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -39,7 +40,7 @@ export default function PolicyEngine() {
 
   const handleToggle = async (id: string, currentStatus: string) => {
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:3001/api/v1/policies/${id}`, {
+    await fetch(`${API_BASE}/api/v1/policies/${id}`, {
       method: 'PATCH',
       headers: { 
         'Authorization': `Bearer ${token}`,
@@ -189,7 +190,7 @@ function PolicyModal({ policy, onClose, onSaved }: { policy?: any, onClose: () =
     e.preventDefault();
     const token = localStorage.getItem('token');
     
-    const url = policy ? `http://localhost:3001/api/v1/policies/${policy.id}` : 'http://localhost:3001/api/v1/policies';
+    const url = policy ? `${API_BASE}/api/v1/policies/${policy.id}` : `${API_BASE}/api/v1/policies`;
     const method = policy ? 'PUT' : 'POST';
 
     await fetch(url, {

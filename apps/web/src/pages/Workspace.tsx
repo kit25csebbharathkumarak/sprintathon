@@ -10,6 +10,7 @@ import ExpenseManagement from '../components/ExpenseManagement';
 import EmployeeManagement from '../components/EmployeeManagement';
 import PolicyEngine from '../components/PolicyEngine';
 import VendorManagement from '../components/VendorManagement';
+import { API_BASE } from '../lib/api';
 
 interface Expense {
   id: string;
@@ -62,7 +63,7 @@ export default function Workspace() {
 
   const fetchExpenses = async (jwt: string) => {
     try {
-      const res = await fetch('http://localhost:3001/api/v1/expenses', {
+      const res = await fetch(`${API_BASE}/api/v1/expenses`, {
         headers: { 'Authorization': `Bearer ${jwt}` }
       });
       if (res.ok) {
@@ -91,7 +92,7 @@ export default function Workspace() {
     setChatInput('');
 
     try {
-      const res = await fetch('http://localhost:3001/api/v1/expenses/copilot', {
+      const res = await fetch(`${API_BASE}/api/v1/expenses/copilot`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export default function Workspace() {
   const handleVerifyLedger = async () => {
     setVerifying(true);
     try {
-      const res = await fetch('http://localhost:3001/api/v1/expenses/verify-ledger', {
+      const res = await fetch(`${API_BASE}/api/v1/expenses/verify-ledger`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

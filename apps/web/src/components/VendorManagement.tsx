@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Building, Receipt, FileText, ExternalLink, Search, Plus, Trash2, Edit3 } from 'lucide-react';
+import { API_BASE } from '../lib/api';
 
 export default function VendorManagement() {
   const [vendors, setVendors] = useState<any[]>([]);
@@ -8,7 +9,7 @@ export default function VendorManagement() {
 
   const fetchVendors = () => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:3001/api/v1/vendors', {
+    fetch(`${API_BASE}/api/v1/vendors`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -29,7 +30,7 @@ export default function VendorManagement() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this vendor?')) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:3001/api/v1/vendors/${id}`, {
+    await fetch(`${API_BASE}/api/v1/vendors/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -150,7 +151,7 @@ function VendorModal({ vendor, onClose, onSaved }: { vendor?: any, onClose: () =
     e.preventDefault();
     const token = localStorage.getItem('token');
     
-    const url = vendor ? `http://localhost:3001/api/v1/vendors/${vendor.id}` : 'http://localhost:3001/api/v1/vendors';
+    const url = vendor ? `${API_BASE}/api/v1/vendors/${vendor.id}` : `${API_BASE}/api/v1/vendors`;
     const method = vendor ? 'PUT' : 'POST';
 
     await fetch(url, {

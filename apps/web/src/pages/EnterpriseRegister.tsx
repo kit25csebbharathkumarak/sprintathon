@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, ArrowLeft, Building, Users, Briefcase, Database, Shield } from 'lucide-react';
+import { Building2, ArrowLeft, Briefcase, Shield } from 'lucide-react';
+import { API_BASE } from '../lib/api';
 
 export default function EnterpriseRegister() {
   const [companyName, setCompanyName] = useState('');
@@ -13,7 +14,7 @@ export default function EnterpriseRegister() {
   const [businessType, setBusinessType] = useState('Technology');
   const [dataSensitivity, setDataSensitivity] = useState('STANDARD');
   const [expectedTxVolume, setExpectedTxVolume] = useState('');
-  const [enterpriseRequirements, setEnterpriseRequirements] = useState('');
+  const [enterpriseRequirements] = useState('');
   
   const [authError, setAuthError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +32,7 @@ export default function EnterpriseRegister() {
         gstin, businessType, dataSensitivity, expectedTxVolume, enterpriseRequirements
       };
       
-      const res = await fetch('http://localhost:3001/api/v1/auth/signup', {
+      const res = await fetch(`${API_BASE}/api/v1/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)

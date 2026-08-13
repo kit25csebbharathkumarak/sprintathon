@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, Settings, Search, Trash2 } from 'lucide-react';
+import { API_BASE } from '../lib/api';
 
 export default function EmployeeManagement() {
   const [employees, setEmployees] = useState<any[]>([]);
@@ -8,7 +9,7 @@ export default function EmployeeManagement() {
 
   const fetchEmployees = () => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:3001/api/v1/employees', {
+    fetch(`${API_BASE}/api/v1/employees`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -30,7 +31,7 @@ export default function EmployeeManagement() {
   const handleDelete = async (fullId: string) => {
     if (!confirm('Are you sure you want to remove this employee?')) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:3001/api/v1/employees/${fullId}`, {
+    await fetch(`${API_BASE}/api/v1/employees/${fullId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -143,7 +144,7 @@ function EmployeeModal({ employee, onClose, onSaved }: { employee?: any, onClose
     e.preventDefault();
     const token = localStorage.getItem('token');
     
-    const url = employee ? `http://localhost:3001/api/v1/employees/${employee.fullId}` : 'http://localhost:3001/api/v1/employees/invite';
+    const url = employee ? `${API_BASE}/api/v1/employees/${employee.fullId}` : `${API_BASE}/api/v1/employees/invite`;
     const method = employee ? 'PUT' : 'POST';
 
     await fetch(url, {

@@ -8,6 +8,7 @@ import {
   Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   AreaChart, Area, Legend, PieChart, Pie, Cell
 } from 'recharts';
+import { API_BASE } from '../lib/api';
 
 const COLORS = ['#2563eb', '#16a34a', '#d97706', '#0f172a', '#475569'];
 
@@ -16,7 +17,7 @@ export default function ExecutiveDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:3001/api/v1/dashboard/summary', {
+    fetch(`${API_BASE}/api/v1/dashboard/summary`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())

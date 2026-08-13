@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UploadCloud, FileText, Check, X, MessageSquare, Download, Filter, Plus } from 'lucide-react';
+import { API_BASE } from '../lib/api';
 
 export default function ExpenseManagement() {
   const [view, setView] = useState<'employee' | 'finance'>('employee');
@@ -15,7 +16,7 @@ export default function ExpenseManagement() {
 
   const fetchExpenses = () => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:3001/api/v1/expenses', {
+    fetch(`${API_BASE}/api/v1/expenses`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -85,7 +86,7 @@ function ExpenseModal({ expense, onClose, onSaved }: { expense?: any, onClose: (
     
     if (!formData.vendor) formData.vendor = 'Unknown Vendor'; 
 
-    const url = expense ? `http://localhost:3001/api/v1/expenses/${expense.id}` : 'http://localhost:3001/api/v1/expenses';
+    const url = expense ? `${API_BASE}/api/v1/expenses/${expense.id}` : `${API_BASE}/api/v1/expenses`;
     const method = expense ? 'PATCH' : 'POST';
 
     await fetch(url, {
@@ -186,7 +187,7 @@ function EmployeeView({ expenses, tenant, onAddClick, onEditClick, onRefresh }: 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this expense?')) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:3001/api/v1/expenses/${id}`, {
+    await fetch(`${API_BASE}/api/v1/expenses/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -243,7 +244,7 @@ function EmployeeView({ expenses, tenant, onAddClick, onEditClick, onRefresh }: 
                     {tenant?.routingStrategy === 'DEDICATED' && exp.status === 'PENDING' && (
                        <button onClick={async () => {
                          const t = localStorage.getItem('token');
-                         await fetch(`http://localhost:3001/api/v1/expenses/${exp.id}`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'MANAGER_APPROVED' }) });
+                         await fetch(`${API_BASE}/api/v1/expenses/${exp.id}`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'MANAGER_APPROVED' }) });
                          onRefresh();
                        }} style={{ background: 'transparent', border: '1px solid var(--status-amber)', color: 'var(--status-amber)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500 }}>
                          Manager Approve
@@ -273,7 +274,7 @@ function EmployeeView({ expenses, tenant, onAddClick, onEditClick, onRefresh }: 
 function FinanceView({ expenses, tenant, onRefresh }: { expenses: any[], tenant: any, onRefresh: () => void }) {
   const updateStatus = async (id: string, status: string) => {
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:3001/api/v1/expenses/${id}`, {
+    await fetch(`${API_BASE}/api/v1/expenses/${id}`, {
       method: 'PATCH',
       headers: { 
         'Authorization': `Bearer ${token}`,
