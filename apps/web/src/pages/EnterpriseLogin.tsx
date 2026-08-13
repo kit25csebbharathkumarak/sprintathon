@@ -44,9 +44,7 @@ export default function EnterpriseLogin() {
 
         <div style={{ maxWidth: '480px', position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'white', display: 'grid', placeItems: 'center', fontWeight: '900', fontSize: '24px', color: 'var(--accent-electric)', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}>
-              4D
-            </div>
+            <img src="/logo.png" alt="4D Expense Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
             <span style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.5px' }}>4D Expense</span>
           </div>
           

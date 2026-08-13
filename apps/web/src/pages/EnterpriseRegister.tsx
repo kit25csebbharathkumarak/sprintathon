@@ -56,9 +56,7 @@ export default function EnterpriseRegister() {
       {/* Top Navigation */}
       <div style={{ height: '70px', backgroundColor: 'white', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 40px', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'var(--accent-electric)', display: 'grid', placeItems: 'center', fontWeight: '900', fontSize: '18px', color: 'white' }}>
-            4D
-          </div>
+          <img src="/logo.png" alt="4D Expense Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
           <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.5px' }}>4D Expense</span>
         </div>
         <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 500 }}>

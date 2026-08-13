@@ -26,9 +26,7 @@ export default function AdminLogin() {
 
         <div style={{ maxWidth: '480px', position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'grid', placeItems: 'center', color: 'white', boxShadow: '0 8px 16px rgba(245, 158, 11, 0.2)' }}>
-              <Crown size={24} />
-            </div>
+            <img src="/logo.png" alt="4D Expense Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
             <span style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.5px' }}>4D Admin</span>
           </div>
           
