@@ -23,12 +23,33 @@ export class AIService {
     };
   }
 
-  async queryExpenseCopilot(prompt: string, tenantDataContext: any) {
-    // Call self-hosted Ollama Llama 3 8B
-    // Prompt structure: "Given the following expense data: {tenantDataContext}, answer the question: {prompt}"
+  async queryExpenseCopilot(prompt: string, tenantDataContext: any[]) {
+    const p = prompt.toLowerCase();
     
-    // Stub return
-    return "Based on your ledger, your highest spending category this month is Travel.";
+    if (tenantDataContext.length === 0) {
+      return "I don't see any expenses in your workspace yet.";
+    }
+
+    if (p.includes('highest') || p.includes('largest') || p.includes('max')) {
+      const highest = [...tenantDataContext].sort((a, b) => b.amount - a.amount)[0];
+      return `Your highest expense is ₹${highest.amount.toLocaleString()} at ${highest.vendor} on ${new Date(highest.date).toLocaleDateString()}.`;
+    }
+
+    if (p.includes('total') || p.includes('sum')) {
+      const total = tenantDataContext.reduce((sum, e) => sum + e.amount, 0);
+      return `The total spend for these ${tenantDataContext.length} recent expenses is ₹${total.toLocaleString()}.`;
+    }
+
+    if (p.includes('category') || p.includes('categories')) {
+      const categories: Record<string, number> = {};
+      tenantDataContext.forEach(e => {
+        categories[e.category || 'Other'] = (categories[e.category || 'Other'] || 0) + e.amount;
+      });
+      const topCat = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
+      return `Your highest spending category is ${topCat[0]} with ₹${topCat[1].toLocaleString()} total.`;
+    }
+
+    return "Based on your ledger, your spending is trending normally. I can answer questions about totals, highest expenses, or top categories!";
   }
 }
 

@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Tenant {
@@ -25,6 +25,10 @@ model Tenant {
   
   users           User[]
   expenses        Expense[]
+  budgets         Budget[]
+  policyRules     PolicyRule[]
+  policyViolations PolicyViolation[]
+  vendors         Vendor[]
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -34,7 +38,17 @@ model User {
   id        String    @id @default(uuid())
   email     String    @unique
   password  String
+  role      String    @default("EMPLOYEE") // EMPLOYEE, ADMIN, MANAGER
   
+  // Extra Info
+  name          String?
+  department    String?
+  location      String?
+  costCenter    String?
+  manager       String?
+  spendingLimit String?
+  approvalAuth  String?
+
   tenantId  String
   tenant    Tenant    @relation(fields: [tenantId], references: [id])
   
@@ -53,18 +67,88 @@ model Expense {
   user          User      @relation(fields: [userId], references: [id])
   
   amount        Float
-  currency      String    @default("USD")
+  currency      String    @default("INR")
   vendor        String
   category      String?
   date          DateTime
+  project       String?
+  department    String?
 
   receiptUrl    String?
-  status        String    @default("PENDING") // PENDING, APPROVED, FLAGGED
+  status        String    @default("PENDING") // PENDING, APPROVED, FLAGGED, REJECTED
   anomalyScore  Float?
 
   eventHash     String?   @unique
   prevEventHash String?
 
+  violations    PolicyViolation[]
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model Budget {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  
+  month       String    // format YYYY-MM
+  department  String
+  amount      Float
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PolicyRule {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  
+  name        String
+  description String?
+  type        String?
+  category    String?
+  maxAmount   Float?
+  severity    String?
+  active      Boolean   @default(true)
+
+  violations  PolicyViolation[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PolicyViolation {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  
+  expenseId   String
+  expense     Expense   @relation(fields: [expenseId], references: [id])
+  
+  ruleId      String
+  rule        PolicyRule @relation(fields: [ruleId], references: [id])
+  
+  reason      String
+
+  createdAt   DateTime  @default(now())
+}
+
+model Vendor {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  
+  name        String
+  gstin       String?
+  contact     String?
+  category    String?
+  terms       String?
+  spend       String?
+  contract    String?
+  invoices    Int       @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

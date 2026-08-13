@@ -8,12 +8,12 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: expense_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:latest
+    image: redpandadata/redpanda:latest
     container_name: expense-redpanda
     command:
       - redpanda
