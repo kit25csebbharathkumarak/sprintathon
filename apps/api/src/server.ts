@@ -36,6 +36,9 @@ server.register(policyRoutes, { prefix: '/api/v1/policies' });
 import { vendorRoutes } from './modules/vendor/vendor.routes';
 server.register(vendorRoutes, { prefix: '/api/v1/vendors' });
 
+import { adminRoutes } from './modules/admin/admin.routes';
+server.register(adminRoutes, { prefix: '/api/v1/admin' });
+
 server.get('/ping', async (request, reply) => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
