@@ -1,55 +1,125 @@
-// AI Service Stubs: Tesseract, ml.js Anomaly Detection, Ollama Copilot
+import { GoogleGenAI, Type } from '@google/genai';
 
 export class AIService {
+  private ai: GoogleGenAI;
+
+  constructor() {
+    this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'MISSING' });
+  }
+
   async processReceiptOCR(imageUrl: string) {
-    // 1. Fetch image
-    // 2. Pass to Tesseract.js worker
-    // 3. Extract Amount, Vendor, Category
-    // Stub return
-    return {
-      amount: 15.99,
-      vendor: 'Starbucks',
-      category: 'Food & Beverage',
-      confidence: 0.92,
-    };
+    try {
+      if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set.");
+      
+      let mimeType = 'image/jpeg';
+      let data = '';
+
+      if (imageUrl.startsWith('http')) {
+        const response = await fetch(imageUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        data = buffer.toString('base64');
+        mimeType = response.headers.get('content-type') || 'image/jpeg';
+      } else if (imageUrl.startsWith('data:image')) {
+        // Handle base64 data URL
+        const parts = imageUrl.split(';');
+        mimeType = parts[0].split(':')[1];
+        data = parts[1].split(',')[1];
+      }
+
+      const prompt = "Extract the receipt details. Return a JSON object exactly matching the schema. If you cannot determine a value, make your best guess or return a default.";
+      
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          { inlineData: { data, mimeType } },
+          prompt
+        ],
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              amount: { type: Type.NUMBER, description: 'Total amount of the receipt' },
+              vendor: { type: Type.STRING, description: 'Name of the merchant/vendor' },
+              category: { type: Type.STRING, description: 'Best category for this expense e.g., Food & Beverage, Travel, Office Supplies' },
+              confidence: { type: Type.NUMBER, description: 'Confidence score from 0.0 to 1.0' }
+            },
+            required: ['amount', 'vendor', 'category', 'confidence']
+          }
+        }
+      });
+      
+      const text = response.text || '{}';
+      return JSON.parse(text);
+    } catch (e) {
+      console.error('OCR Error:', e);
+      return { amount: 0, vendor: 'Unknown', category: 'Other', confidence: 0 };
+    }
   }
 
   async runAnomalyDetection(expenseData: any, tenantHistory: any[]) {
-    // Use ml.js (e.g. Isolation Forest or simple Z-Score) to detect outliers
-    // Return an anomaly score
-    return {
-      isAnomaly: false,
-      score: 0.05,
-    };
+    try {
+      if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set.");
+      
+      const prompt = `
+        You are a financial fraud detection AI.
+        Here is a new expense: ${JSON.stringify(expenseData)}
+        Here is the recent history for this company: ${JSON.stringify(tenantHistory.slice(0, 30))}
+        
+        Is this new expense an anomaly? (e.g. abnormally high amount, unusual vendor, etc).
+        Return a JSON object with 'isAnomaly' (boolean), 'score' (number between 0.0 and 1.0 where 1.0 is highly anomalous), and 'reason' (short string).
+      `;
+
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              isAnomaly: { type: Type.BOOLEAN },
+              score: { type: Type.NUMBER },
+              reason: { type: Type.STRING }
+            },
+            required: ['isAnomaly', 'score', 'reason']
+          }
+        }
+      });
+
+      const text = response.text || '{}';
+      return JSON.parse(text);
+    } catch (e) {
+      console.error('Anomaly Detection Error:', e);
+      return { isAnomaly: false, score: 0.0, reason: 'Error checking anomaly' };
+    }
   }
 
   async queryExpenseCopilot(prompt: string, tenantDataContext: any[]) {
-    const p = prompt.toLowerCase();
-    
-    if (tenantDataContext.length === 0) {
-      return "I don't see any expenses in your workspace yet.";
-    }
+    try {
+      if (!process.env.GEMINI_API_KEY) return "AI features require GEMINI_API_KEY to be configured in the environment.";
+      
+      const contextStr = JSON.stringify(tenantDataContext.slice(0, 50));
+      
+      const systemPrompt = `You are a helpful, expert AI Financial Copilot for a company's expense management platform. 
+      You are helping an employee or manager understand their spending.
+      Answer their query based ONLY on the following recent expense data:
+      ${contextStr}
+      
+      User Query: ${prompt}
+      `;
 
-    if (p.includes('highest') || p.includes('largest') || p.includes('max')) {
-      const highest = [...tenantDataContext].sort((a, b) => b.amount - a.amount)[0];
-      return `Your highest expense is ₹${highest.amount.toLocaleString()} at ${highest.vendor} on ${new Date(highest.date).toLocaleDateString()}.`;
-    }
-
-    if (p.includes('total') || p.includes('sum')) {
-      const total = tenantDataContext.reduce((sum, e) => sum + e.amount, 0);
-      return `The total spend for these ${tenantDataContext.length} recent expenses is ₹${total.toLocaleString()}.`;
-    }
-
-    if (p.includes('category') || p.includes('categories')) {
-      const categories: Record<string, number> = {};
-      tenantDataContext.forEach(e => {
-        categories[e.category || 'Other'] = (categories[e.category || 'Other'] || 0) + e.amount;
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: systemPrompt
       });
-      const topCat = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
-      return `Your highest spending category is ${topCat[0]} with ₹${topCat[1].toLocaleString()} total.`;
-    }
 
-    return "Based on your ledger, your spending is trending normally. I can answer questions about totals, highest expenses, or top categories!";
+      return response.text || "I'm sorry, I couldn't generate a response.";
+    } catch (e) {
+      console.error('Copilot Error:', e);
+      return "An error occurred while connecting to the AI Copilot.";
+    }
   }
 }
 
