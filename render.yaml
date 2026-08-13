@@ -1,0 +1,44 @@
+services:
+  # ─────────────────────────────────────────
+  # Backend API (Fastify + Prisma)
+  # ─────────────────────────────────────────
+  - type: web
+    name: sprintathon-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .            # root context (needed for npm workspaces)
+    plan: free
+    healthCheckPath: /ping      # Render uses this to know the app is up
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sprintathon-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true     # Render auto-generates a secure random value
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://sprintathon-web.onrender.com   # update after web deploys
+
+  # ─────────────────────────────────────────
+  # Frontend (React + Vite → nginx)
+  # ─────────────────────────────────────────
+  - type: web
+    name: sprintathon-web
+    runtime: docker
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: ./apps/web   # web context (self-contained)
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        value: https://sprintathon-api.onrender.com   # update if you change the API name
+
+# ─────────────────────────────────────────
+# PostgreSQL Database (free for 90 days)
+# ─────────────────────────────────────────
+databases:
+  - name: sprintathon-db
+    databaseName: expense_db
+    user: admin
+    plan: free
