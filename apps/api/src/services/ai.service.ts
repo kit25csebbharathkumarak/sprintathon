@@ -1,24 +1,32 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 export class AIService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenerativeAI;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'MISSING' });
+    this.ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING');
   }
 
-  private async generateContentWithFallback(params: any) {
-    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash-8b', 'gemini-pro'];
+  private async generateContentWithFallback(prompt: any, config?: any) {
+    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
     let lastError: any = null;
     
-    for (const model of modelsToTry) {
+    for (const modelName of modelsToTry) {
       try {
-        return await this.ai.models.generateContent({ ...params, model });
+        const model = this.ai.getGenerativeModel({ 
+          model: modelName,
+          generationConfig: config ? {
+            responseMimeType: config.responseMimeType,
+            responseSchema: config.responseSchema
+          } : undefined
+        });
+        
+        const response = await model.generateContent(prompt);
+        return response.response.text();
       } catch (e: any) {
         lastError = e;
-        // If it's a 404 or model not found, try the next one. Otherwise, throw.
         if (e.message && (e.message.includes('not found') || e.message.includes('no longer available') || e.message.includes('not supported'))) {
-          console.warn(`Model ${model} failed, trying next...`);
+          console.warn(`Model ${modelName} failed, trying next...`);
           continue;
         }
         throw e;
@@ -41,36 +49,34 @@ export class AIService {
         data = buffer.toString('base64');
         mimeType = response.headers.get('content-type') || 'image/jpeg';
       } else if (imageUrl.startsWith('data:image')) {
-        // Handle base64 data URL
         const parts = imageUrl.split(';');
         mimeType = parts[0].split(':')[1];
         data = parts[1].split(',')[1];
       }
 
-      const prompt = "Extract the receipt details. Return a JSON object exactly matching the schema. If you cannot determine a value, make your best guess or return a default.";
+      const promptText = "Extract the receipt details. Return a JSON object exactly matching the schema. If you cannot determine a value, make your best guess or return a default.";
       
-      const response = await this.generateContentWithFallback({
-        contents: [
-          { inlineData: { data, mimeType } },
-          prompt
-        ],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              amount: { type: Type.NUMBER, description: 'Total amount of the receipt' },
-              vendor: { type: Type.STRING, description: 'Name of the merchant/vendor' },
-              category: { type: Type.STRING, description: 'Best category for this expense e.g., Food & Beverage, Travel, Office Supplies' },
-              confidence: { type: Type.NUMBER, description: 'Confidence score from 0.0 to 1.0' }
-            },
-            required: ['amount', 'vendor', 'category', 'confidence']
-          }
+      const prompt = [
+        { inlineData: { data, mimeType } },
+        promptText
+      ];
+      
+      const config = {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: SchemaType.OBJECT,
+          properties: {
+            amount: { type: SchemaType.NUMBER, description: 'Total amount of the receipt' },
+            vendor: { type: SchemaType.STRING, description: 'Name of the merchant/vendor' },
+            category: { type: SchemaType.STRING, description: 'Best category for this expense e.g., Food & Beverage, Travel, Office Supplies' },
+            confidence: { type: SchemaType.NUMBER, description: 'Confidence score from 0.0 to 1.0' }
+          },
+          required: ['amount', 'vendor', 'category', 'confidence']
         }
-      });
-      
-      const text = response.text || '{}';
-      return JSON.parse(text);
+      };
+
+      const text = await this.generateContentWithFallback(prompt, config);
+      return JSON.parse(text || '{}');
     } catch (e) {
       console.error('OCR Error:', e);
       return { amount: 0, vendor: 'Unknown', category: 'Other', confidence: 0 };
@@ -81,7 +87,7 @@ export class AIService {
     try {
       if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set.");
       
-      const prompt = `
+      const promptText = `
         You are a financial fraud detection AI.
         Here is a new expense: ${JSON.stringify(expenseData)}
         Here is the recent history for this company: ${JSON.stringify(tenantHistory.slice(0, 30))}
@@ -90,24 +96,21 @@ export class AIService {
         Return a JSON object with 'isAnomaly' (boolean), 'score' (number between 0.0 and 1.0 where 1.0 is highly anomalous), and 'reason' (short string).
       `;
 
-      const response = await this.generateContentWithFallback({
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              isAnomaly: { type: Type.BOOLEAN },
-              score: { type: Type.NUMBER },
-              reason: { type: Type.STRING }
-            },
-            required: ['isAnomaly', 'score', 'reason']
-          }
+      const config = {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: SchemaType.OBJECT,
+          properties: {
+            isAnomaly: { type: SchemaType.BOOLEAN },
+            score: { type: SchemaType.NUMBER },
+            reason: { type: SchemaType.STRING }
+          },
+          required: ['isAnomaly', 'score', 'reason']
         }
-      });
+      };
 
-      const text = response.text || '{}';
-      return JSON.parse(text);
+      const text = await this.generateContentWithFallback(promptText, config);
+      return JSON.parse(text || '{}');
     } catch (e) {
       console.error('Anomaly Detection Error:', e);
       return { isAnomaly: false, score: 0.0, reason: 'Error checking anomaly' };
@@ -128,11 +131,8 @@ export class AIService {
       User Query: ${prompt}
       `;
 
-      const response = await this.generateContentWithFallback({
-        contents: systemPrompt
-      });
-
-      return response.text || "I'm sorry, I couldn't generate a response.";
+      const text = await this.generateContentWithFallback(systemPrompt);
+      return text || "I'm sorry, I couldn't generate a response.";
     } catch (e: any) {
       console.error('Copilot Error:', e);
       return `AI Connection Error: ${e.message || "Failed to generate content."}`;
