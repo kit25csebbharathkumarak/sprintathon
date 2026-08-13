@@ -113,8 +113,15 @@ function ExpenseModal({ expense, onClose, onSaved }: { expense?: any, onClose: (
               category: data.category && data.category !== 'Other' ? data.category : prev.category
             }));
           } else {
-            console.error('OCR API returned an error:', response.status);
-            alert('Failed to scan receipt. Please enter details manually.');
+            let errorMsg = 'Failed to scan receipt';
+            try {
+              const errData = await response.json();
+              errorMsg = errData.error || errorMsg;
+            } catch (e) {
+              errorMsg += ` (HTTP ${response.status})`;
+            }
+            console.error('OCR API returned an error:', errorMsg);
+            alert(`OCR Failed: ${errorMsg}`);
           }
         } catch (innerErr) {
           console.error('Error during OCR fetch:', innerErr);
