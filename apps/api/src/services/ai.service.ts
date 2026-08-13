@@ -116,9 +116,9 @@ export class AIService {
       });
 
       return response.text || "I'm sorry, I couldn't generate a response.";
-    } catch (e) {
+    } catch (e: any) {
       console.error('Copilot Error:', e);
-      return "An error occurred while connecting to the AI Copilot.";
+      return `AI Connection Error: ${e.message || "Failed to generate content."}`;
     }
   }
 }
