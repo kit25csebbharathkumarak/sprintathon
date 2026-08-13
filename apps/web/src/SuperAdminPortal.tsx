@@ -1,291 +1,94 @@
 import { useState } from 'react';
 import { 
-  Crown, LayoutDashboard, Building2, Users, CreditCard, 
-  BarChart3, BrainCircuit, Server, ShieldCheck, FileSearch, 
-  Settings, LogOut, ArrowUpRight, Activity, Database, Cpu
+  Home, Building2, Users, CreditCard, Receipt, BarChart3, Activity, 
+  ArrowRightLeft, Tags, FileText, ShieldCheck, Link, Settings, Bell, 
+  Calendar, MoreHorizontal, ArrowUpRight, CheckCircle2, Plus, Eye, 
+  Search, ArrowRight, User, FilePlus, ArrowDownRight
 } from 'lucide-react';
 import { 
-  Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  AreaChart, Area, BarChart, Bar 
+  LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, 
+  XAxis, YAxis, CartesianGrid 
 } from 'recharts';
 
 // --- Mock Data ---
 const revenueData = [
-  { name: 'Jan', revenue: 4000, activeTenants: 24 },
-  { name: 'Feb', revenue: 5500, activeTenants: 28 },
-  { name: 'Mar', revenue: 7800, activeTenants: 36 },
-  { name: 'Apr', revenue: 9200, activeTenants: 45 },
-  { name: 'May', revenue: 11000, activeTenants: 52 },
-  { name: 'Jun', revenue: 15400, activeTenants: 65 },
+  { name: '1 Aug', revenue: 1900000 },
+  { name: '3 Aug', revenue: 2200000 },
+  { name: '5 Aug', revenue: 2900000 },
+  { name: '7 Aug', revenue: 245300 }, // Matches the tooltip in screenshot
+  { name: '9 Aug', revenue: 3100000 },
+  { name: '11 Aug', revenue: 2900000 },
+  { name: '13 Aug', revenue: 3300000 },
 ];
 
-const aiUsageData = [
-  { name: 'Mon', tokens: 120000, requests: 450 },
-  { name: 'Tue', tokens: 180000, requests: 620 },
-  { name: 'Wed', tokens: 250000, requests: 890 },
-  { name: 'Thu', tokens: 210000, requests: 740 },
-  { name: 'Fri', tokens: 380000, requests: 1200 },
-  { name: 'Sat', tokens: 150000, requests: 400 },
-  { name: 'Sun', tokens: 110000, requests: 310 },
+const topTenantsData = [
+  { name: 'Acme Corporation', value: 624500, color: '#3b82f6' },
+  { name: 'Globex Solutions', value: 475200, color: '#8b5cf6' },
+  { name: 'Initech Pvt Ltd', value: 315000, color: '#10b981' },
+  { name: 'Umbrella Corp', value: 282750, color: '#f59e0b' },
+  { name: 'Stark Industries', value: 210800, color: '#ef4444' },
 ];
 
-const mockTenants = [
-  { id: 't-101', name: 'Acme Corp', plan: 'Enterprise', routing: 'DEDICATED', status: 'Active', mrr: '₹4,500' },
-  { id: 't-102', name: 'Globex Inc', plan: 'Pro', routing: 'SHARED', status: 'Active', mrr: '₹499' },
-  { id: 't-103', name: 'Initech', plan: 'Pro', routing: 'SHARED', status: 'Warning', mrr: '₹499' },
-  { id: 't-104', name: 'Stark Ind.', plan: 'Enterprise', routing: 'DEDICATED', status: 'Active', mrr: '₹12,000' },
+const subscriptionData = [
+  { name: 'Enterprise', value: 32, percentage: '25%', color: '#3b82f6' },
+  { name: 'Professional', value: 58, percentage: '45%', color: '#8b5cf6' },
+  { name: 'Basic', value: 28, percentage: '22%', color: '#10b981' },
+  { name: 'Free Trial', value: 10, percentage: '8%', color: '#f59e0b' },
+];
+
+const recentActivity = [
+  { id: 1, title: 'New tenant "TechNova Solutions" signed up', time: '13 Aug 2026, 11:30 AM', icon: Building2, color: '#10b981', bg: '#d1fae5' },
+  { id: 2, title: 'Invoice INV-2026-0813-005 generated', time: '13 Aug 2026, 10:15 AM', icon: Receipt, color: '#8b5cf6', bg: '#ede9fe' },
+  { id: 3, title: 'Plan upgraded by Globex Solutions', time: '13 Aug 2026, 09:45 AM', icon: ArrowUpRight, color: '#3b82f6', bg: '#dbeafe' },
+  { id: 4, title: 'Payment received from Acme Corporation', time: '13 Aug 2026, 09:20 AM', icon: CreditCard, color: '#10b981', bg: '#d1fae5' },
+  { id: 5, title: 'User role updated in Initech Pvt Ltd', time: '13 Aug 2026, 08:50 AM', icon: User, color: '#f59e0b', bg: '#fef3c7' },
+];
+
+const allTenants = [
+  { id: 1, name: 'Acme Corporation', plan: 'Enterprise', users: 120, status: 'Active', revenue: '₹6,24,500' },
+  { id: 2, name: 'Globex Solutions', plan: 'Professional', users: 45, status: 'Active', revenue: '₹4,75,200' },
+  { id: 3, name: 'Initech Pvt Ltd', plan: 'Professional', users: 30, status: 'Active', revenue: '₹3,15,000' },
+  { id: 4, name: 'Umbrella Corp', plan: 'Enterprise', users: 200, status: 'Active', revenue: '₹2,82,750' },
+  { id: 5, name: 'Stark Industries', plan: 'Basic', users: 10, status: 'Inactive', revenue: '₹2,10,800' },
 ];
 
 export default function SuperAdminPortal({ onLogout }: { onLogout: () => void }) {
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [activeTab, setActiveTab] = useState('Overview');
 
   const navItems = [
-    { name: 'Platform Dashboard', icon: LayoutDashboard, id: 'Dashboard' },
+    { name: 'Overview', icon: Home, id: 'Overview' },
     { name: 'Tenants', icon: Building2, id: 'Tenants' },
     { name: 'Users', icon: Users, id: 'Users' },
-    { name: 'Plans & Billing', icon: CreditCard, id: 'Billing' },
-    { name: 'Platform Analytics', icon: BarChart3, id: 'Analytics' },
-    { name: 'AI Usage', icon: BrainCircuit, id: 'AIUsage' },
-    { name: 'Infrastructure', icon: Server, id: 'Infrastructure' },
-    { name: 'Security', icon: ShieldCheck, id: 'Security' },
-    { name: 'Platform Audit', icon: FileSearch, id: 'Audit' },
-    { name: 'Platform Settings', icon: Settings, id: 'Settings' },
+    { name: 'Subscriptions', icon: CreditCard, id: 'Subscriptions' },
+    { name: 'Billing & Invoices', icon: Receipt, id: 'Billing' },
+    { name: 'Plans', icon: FileText, id: 'Plans' },
+    { name: 'System Usage', icon: Activity, id: 'SystemUsage' },
+    { name: 'Transactions', icon: ArrowRightLeft, id: 'Transactions' },
+    { name: 'Categories', icon: Tags, id: 'Categories' },
+    { name: 'Reports', icon: BarChart3, id: 'Reports' },
+    { name: 'Audit Logs', icon: FileSearch, id: 'AuditLogs' },
+    { name: 'Integrations', icon: Link, id: 'Integrations' },
+    { name: 'Settings', icon: Settings, id: 'Settings' },
   ];
 
-  const renderDashboard = () => (
-    <div className="fade-in">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-        <StatCard title="Total Platform MRR" value="₹32,450" trend="+14.2%" icon={CreditCard} color="var(--status-green)" />
-        <StatCard title="Active Tenants" value="84" trend="+8" icon={Building2} color="var(--accent-electric)" />
-        <StatCard title="Total AI Tokens (30d)" value="12.4M" trend="+2.1M" icon={BrainCircuit} color="var(--status-amber)" />
-        <StatCard title="Global Fraud Prevented" value="₹1.2M" trend="+₹145k" icon={ShieldCheck} color="var(--status-red)" />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginBottom: '24px' }}>
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-            <Activity size={18} color="var(--accent-electric)" /> Platform Growth
-          </h3>
-          <div style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--accent-electric)" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="var(--accent-electric)" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} tickFormatter={(val) => `₹${val/1000}k`} />
-                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text-primary)' }} />
-                <Area type="monotone" dataKey="revenue" stroke="var(--accent-electric)" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '24px', color: 'var(--text-primary)' }}>Top Tenants</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {mockTenants.slice(0,4).map(tenant => (
-              <div key={tenant.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tenant.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{tenant.plan}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 700, color: 'var(--status-green)' }}>{tenant.mrr}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{tenant.routing}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderInfrastructure = () => (
-    <div className="fade-in">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '24px' }}>
-        <div className="glass-panel" style={{ padding: '24px', borderTop: '4px solid var(--status-green)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Database size={24} color="var(--status-green)" />
-            <span style={{ fontSize: '0.85rem', color: 'var(--status-green)', backgroundColor: 'var(--status-green-bg)', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>Healthy</span>
-          </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>PostgreSQL Primary</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '8px' }}>Global Shared Pool: 45% Capacity</p>
-          <div style={{ marginTop: '16px', height: '6px', backgroundColor: 'var(--bg-primary)', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{ width: '45%', height: '100%', backgroundColor: 'var(--status-green)' }}></div>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '24px', borderTop: '4px solid var(--status-amber)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Cpu size={24} color="var(--status-amber)" />
-            <span style={{ fontSize: '0.85rem', color: 'var(--status-amber)', backgroundColor: 'var(--status-amber-bg)', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>High Load</span>
-          </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>AI Inference Engine</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '8px' }}>LLM Worker Nodes: 82% Utilization</p>
-          <div style={{ marginTop: '16px', height: '6px', backgroundColor: 'var(--bg-primary)', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{ width: '82%', height: '100%', backgroundColor: 'var(--status-amber)' }}></div>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '24px', borderTop: '4px solid var(--accent-electric)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Activity size={24} color="var(--accent-electric)" />
-            <span style={{ fontSize: '0.85rem', color: 'var(--accent-electric)', backgroundColor: 'rgba(37, 99, 235, 0.1)', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>Optimized</span>
-          </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>Redpanda Queue</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '8px' }}>Event Broker throughput: 4.2k/sec</p>
-          <div style={{ marginTop: '16px', height: '6px', backgroundColor: 'var(--bg-primary)', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{ width: '25%', height: '100%', backgroundColor: 'var(--accent-electric)' }}></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="glass-panel" style={{ padding: '24px' }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '24px', color: 'var(--text-primary)' }}>Dedicated Tenant Provisioning Logs</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              <th style={{ padding: '12px' }}>Timestamp</th>
-              <th style={{ padding: '12px' }}>Action</th>
-              <th style={{ padding: '12px' }}>Tenant ID</th>
-              <th style={{ padding: '12px' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { time: '10 mins ago', action: 'Spin up Dedicated Postgres Schema', tenant: 't-104', status: 'SUCCESS' },
-              { time: '1 hr ago', action: 'Scale LLM Node Pool', tenant: 'SYSTEM', status: 'SUCCESS' },
-              { time: '4 hrs ago', action: 'Data Migration to Dedicated', tenant: 't-101', status: 'SUCCESS' },
-            ].map((log, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
-                <td style={{ padding: '14px 12px', color: 'var(--text-secondary)' }}>{log.time}</td>
-                <td style={{ padding: '14px 12px', fontWeight: 600, color: 'var(--text-primary)' }}>{log.action}</td>
-                <td style={{ padding: '14px 12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{log.tenant}</td>
-                <td style={{ padding: '14px 12px' }}>
-                  <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: 'var(--status-green-bg)', color: 'var(--status-green)' }}>{log.status}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  const renderTenants = () => (
-    <div className="fade-in glass-panel" style={{ padding: '24px' }}>
-       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-primary)' }}>Active Tenants (Organizations)</h3>
-        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Crown size={16} /> Force Provision Dedicated
-        </button>
-      </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            <th style={{ padding: '12px' }}>Organization</th>
-            <th style={{ padding: '12px' }}>Plan</th>
-            <th style={{ padding: '12px' }}>Database Routing</th>
-            <th style={{ padding: '12px' }}>MRR</th>
-            <th style={{ padding: '12px' }}>Status</th>
-            <th style={{ padding: '12px' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mockTenants.map((tenant) => (
-            <tr key={tenant.id} style={{ borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem', cursor: 'pointer' }} className="table-row-hover">
-              <td style={{ padding: '14px 12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                {tenant.name}
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal', marginTop: '4px' }}>ID: {tenant.id}</div>
-              </td>
-              <td style={{ padding: '14px 12px' }}>
-                <span style={{ color: tenant.plan === 'Enterprise' ? 'var(--status-amber)' : 'var(--text-secondary)', fontWeight: tenant.plan === 'Enterprise' ? 700 : 500 }}>
-                  {tenant.plan}
-                </span>
-              </td>
-              <td style={{ padding: '14px 12px' }}>
-                <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: tenant.routing === 'DEDICATED' ? 'var(--status-amber-bg)' : 'rgba(37, 99, 235, 0.1)', color: tenant.routing === 'DEDICATED' ? 'var(--status-amber)' : 'var(--accent-electric)', border: tenant.routing === 'DEDICATED' ? '1px solid var(--status-amber)' : '1px solid var(--accent-electric)' }}>
-                  {tenant.routing}
-                </span>
-              </td>
-              <td style={{ padding: '14px 12px', fontWeight: 700, color: 'var(--text-primary)' }}>{tenant.mrr}</td>
-              <td style={{ padding: '14px 12px' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: tenant.status === 'Active' ? 'var(--status-green)' : 'var(--status-amber)', fontSize: '0.85rem', fontWeight: 500 }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: tenant.status === 'Active' ? 'var(--status-green)' : 'var(--status-amber)' }}></span>
-                  {tenant.status}
-                </span>
-              </td>
-              <td style={{ padding: '14px 12px' }}>
-                <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Manage</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const renderAIUsage = () => (
-    <div className="fade-in glass-panel" style={{ padding: '24px' }}>
-      <h3 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '24px', color: 'var(--text-primary)' }}>AI Copilot Usage & Token Consumption</h3>
-      
-      <div style={{ height: '350px', marginBottom: '32px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={aiUsageData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-            <XAxis dataKey="name" stroke="var(--text-secondary)" tickLine={false} axisLine={false} />
-            <YAxis yAxisId="left" orientation="left" stroke="var(--text-secondary)" tickLine={false} axisLine={false} tickFormatter={(val) => `${val/1000}k`} />
-            <YAxis yAxisId="right" orientation="right" stroke="var(--status-amber)" tickLine={false} axisLine={false} />
-            <Tooltip contentStyle={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
-            <Bar yAxisId="left" dataKey="tokens" fill="var(--accent-electric)" radius={[4, 4, 0, 0]} name="Tokens Used" />
-            <Line yAxisId="right" type="monotone" dataKey="requests" stroke="var(--status-amber)" strokeWidth={3} name="Total Requests" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-        <div style={{ backgroundColor: 'rgba(37, 99, 235, 0.05)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(37, 99, 235, 0.2)' }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>LLM Cost (Estimated Month-to-date)</div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>₹1,245.80</div>
-        </div>
-        <div style={{ backgroundColor: 'var(--status-red-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--status-red)' }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--status-red)' }}>Avg Anomaly Detection Latency</div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--status-red)', marginTop: '8px' }}>240ms</div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPlaceholder = () => (
-    <div className="fade-in glass-panel" style={{ padding: '40px', textAlign: 'center', height: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      <Crown size={48} color="var(--accent-electric)" style={{ marginBottom: '16px', opacity: 0.5 }} />
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '12px', color: 'var(--text-primary)' }}>{activeTab} Management</h2>
-      <p style={{ color: 'var(--text-secondary)', maxWidth: '400px' }}>This administrative module is currently being provisioned for the Super Admin role.</p>
-    </div>
-  );
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', color: '#0f172a', fontFamily: 'Inter, sans-serif' }}>
       
       {/* Sidebar */}
-      <aside style={{ width: '280px', backgroundColor: 'var(--bg-navy)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(245,158,11,0.3)' }}>
-            <Crown size={20} color="white" />
+      <aside style={{ width: '260px', backgroundColor: '#0f172a', color: '#94a3b8', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        {/* Logo Area */}
+        <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '32px', height: '32px', backgroundColor: '#3b82f6', color: 'white', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
+              4D
+            </div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', letterSpacing: '0.5px' }}>EXPENSE</div>
           </div>
-          <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.5px', color: 'white' }}>Super Admin</div>
-            <div style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 600, letterSpacing: '1px' }}>GOD MODE</div>
-          </div>
+          <div style={{ fontSize: '0.75rem', marginTop: '4px', paddingLeft: '42px', color: '#cbd5e1' }}>SaaS Admin Portal</div>
         </div>
 
-        <nav style={{ padding: '16px 12px', flex: 1, overflowY: 'auto' }}>
+        {/* Navigation */}
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -298,85 +101,415 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '12px 16px',
-                  backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: isActive ? 'white' : '#94a3b8',
+                  padding: '10px 16px',
+                  backgroundColor: isActive ? '#2563eb' : 'transparent',
+                  color: isActive ? 'white' : '#cbd5e1',
                   border: 'none',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  fontSize: '0.95rem',
-                  fontWeight: isActive ? 600 : 500,
-                  transition: 'all 0.2s ease',
-                  marginBottom: '4px'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.color = '#e2e8f0';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#94a3b8';
-                  }
+                  fontSize: '0.9rem',
+                  fontWeight: isActive ? 500 : 400,
+                  transition: 'all 0.2s',
+                  marginBottom: '2px'
                 }}
               >
-                <Icon size={18} />
-                {item.name}
+                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                <span style={{ flex: 1 }}>{item.name}</span>
+                {item.id !== 'Overview' && <span style={{ opacity: isActive ? 1 : 0.5 }}>›</span>}
               </button>
             )
           })}
         </nav>
 
-        <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <button onClick={onLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600 }}>
-            <LogOut size={16} /> Exit Super Admin
-          </button>
+        {/* Platform Usage Box */}
+        <div style={{ padding: '20px 12px', marginTop: 'auto' }}>
+          <div style={{ backgroundColor: '#1e293b', borderRadius: '12px', padding: '16px' }}>
+            <h4 style={{ fontSize: '0.8rem', color: 'white', marginBottom: '4px', fontWeight: 600 }}>Platform Usage</h4>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '16px' }}>This Month</div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
+                <span style={{ color: '#cbd5e1' }}>Active Tenants</span>
+                <span style={{ color: 'white' }}>128 / 200</span>
+              </div>
+              <div style={{ height: '6px', backgroundColor: '#334155', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: '64%', height: '100%', backgroundColor: '#3b82f6' }}></div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
+                <span style={{ color: '#cbd5e1' }}>Storage Used</span>
+                <span style={{ color: 'white' }}>245 GB / 1 TB</span>
+              </div>
+              <div style={{ height: '6px', backgroundColor: '#334155', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: '24%', height: '100%', backgroundColor: '#8b5cf6' }}></div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
+                <span style={{ color: '#cbd5e1' }}>API Requests</span>
+                <span style={{ color: 'white' }}>1.2M / 5M</span>
+              </div>
+              <div style={{ height: '6px', backgroundColor: '#334155', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: '24%', height: '100%', backgroundColor: '#10b981' }}></div>
+              </div>
+            </div>
+
+            <button style={{ width: '100%', backgroundColor: 'transparent', border: '1px solid #334155', color: '#94a3b8', padding: '8px', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}>
+              View Usage Analytics <ArrowRight size={14} />
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-            {navItems.find(i => i.id === activeTab)?.name}
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Platform Status: <span style={{ color: 'var(--status-green)', fontWeight: 600 }}>All Systems Operational</span></span>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'white', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-              <Settings size={20} color="var(--text-secondary)" />
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        
+        {/* Header */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 32px', backgroundColor: 'white', borderBottom: '1px solid #e2e8f0' }}>
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Welcome back, Admin! 👋</h1>
+            <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Here's what's happening across your platform today.</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: 'white', color: '#64748b', fontSize: '0.85rem', cursor: 'pointer' }}>
+              <Calendar size={16} /> 01 Aug 2026 - 13 Aug 2026 <ArrowRightLeft size={14} style={{ transform: 'rotate(90deg)' }} />
+            </button>
+            
+            <div style={{ position: 'relative', cursor: 'pointer' }}>
+              <Bell size={20} color="#64748b" />
+              <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%', border: '2px solid white' }}></div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={onLogout}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#2563eb', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                A
+              </div>
+              <div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>Admin User</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Super Admin</div>
+              </div>
             </div>
           </div>
         </header>
 
-        {activeTab === 'Dashboard' && renderDashboard()}
-        {activeTab === 'Infrastructure' && renderInfrastructure()}
-        {activeTab === 'Tenants' && renderTenants()}
-        {activeTab === 'AIUsage' && renderAIUsage()}
-        
-        {/* Fallbacks for other tabs */}
-        {!['Dashboard', 'Infrastructure', 'Tenants', 'AIUsage'].includes(activeTab) && renderPlaceholder()}
+        {/* Scrollable Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+          
+          {/* Stat Cards Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Users size={20} color="#3b82f6" />
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Total Tenants</div>
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>128</div>
+              <div style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                <ArrowUpRight size={14} /> 12 this month
+              </div>
+            </div>
 
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={20} color="#3b82f6" />
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Total Users</div>
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>2,453</div>
+              <div style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                <ArrowUpRight size={14} /> 18 this month
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileText size={20} color="#10b981" />
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Total Revenue</div>
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>₹24,78,250</div>
+              <div style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                <ArrowUpRight size={14} /> 14.3% vs last month
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Activity size={20} color="#a855f7" />
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Expenses Tracked</div>
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>18,924</div>
+              <div style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                <ArrowUpRight size={14} /> 16.8% vs last month
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <CreditCard size={20} color="#f97316" />
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Invoices Generated</div>
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>3,215</div>
+              <div style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                <ArrowUpRight size={14} /> 11.2% vs last month
+              </div>
+            </div>
+          </div>
+
+          {/* Main Grid: Charts & Activity */}
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+            
+            {/* Revenue Overview */}
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>Revenue Overview</h3>
+                <button style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  This Month <ArrowDownRight size={14} style={{ transform: 'rotate(-45deg)' }} />
+                </button>
+              </div>
+              <div style={{ height: '240px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `₹${val/100000}L`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', color: 'white', borderRadius: '8px', border: 'none', padding: '8px 12px' }}
+                      itemStyle={{ color: 'white', fontSize: '0.9rem' }}
+                      formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                      labelStyle={{ display: 'none' }}
+                    />
+                    <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: 'white' }} activeDot={{ r: 6, fill: '#3b82f6', stroke: 'white' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Top 5 Tenants */}
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 24px 0' }}>Top 5 Tenants by Revenue</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={topTenantsData} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
+                        {topTenantsData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>₹24,78,250</div>
+                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Total Revenue</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {topTenantsData.map((t, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: t.color }}></div>
+                      <span style={{ color: '#64748b' }}>{t.name}</span>
+                    </div>
+                    <span style={{ color: '#1e293b', fontWeight: 500 }}>₹{t.value.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>Recent Activity</h3>
+                <a href="#" style={{ fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 500 }}>View All</a>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {recentActivity.map((activity) => {
+                  const Icon = activity.icon;
+                  return (
+                    <div key={activity.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: activity.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon size={16} color={activity.color} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500, lineHeight: 1.4 }}>{activity.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{activity.time}</div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', paddingBottom: '40px' }}>
+            
+            {/* All Tenants Table */}
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>All Tenants</h3>
+                <div style={{ position: 'relative' }}>
+                  <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input type="text" placeholder="Search tenants..." style={{ padding: '8px 12px 8px 32px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', width: '200px' }} />
+                </div>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Tenant Name</th>
+                    <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Plan</th>
+                    <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Users</th>
+                    <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Status</th>
+                    <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Revenue (This Month)</th>
+                    <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allTenants.map((t) => (
+                    <tr key={t.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{t.name}</td>
+                      <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{t.plan}</td>
+                      <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{t.users}</td>
+                      <td style={{ padding: '14px 8px', fontSize: '0.85rem', fontWeight: 500, color: t.status === 'Active' ? '#10b981' : '#ef4444' }}>{t.status}</td>
+                      <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#1e293b' }}>{t.revenue}</td>
+                      <td style={{ padding: '14px 8px', color: '#94a3b8' }}><MoreHorizontal size={18} style={{ cursor: 'pointer' }} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: '16px' }}>
+                <a href="#" style={{ fontSize: '0.85rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  View all tenants <ArrowRight size={14} />
+                </a>
+              </div>
+            </div>
+
+            {/* Subscription & System */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 20px 0' }}>Subscription Overview</h3>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', width: '140px', height: '140px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={subscriptionData} innerRadius={50} outerRadius={65} paddingAngle={2} dataKey="value">
+                          {subscriptionData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b' }}>128</div>
+                      <div style={{ fontSize: '0.65rem', color: '#64748b' }}>Total Tenants</div>
+                    </div>
+                  </div>
+                  <div style={{ marginLeft: '24px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+                    {subscriptionData.map((s, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: s.color }}></div>
+                          <span style={{ color: '#64748b' }}>{s.name}</span>
+                        </div>
+                        <span style={{ color: '#1e293b', fontWeight: 500 }}>{s.value} <span style={{ color: '#94a3b8', fontWeight: 400 }}>({s.percentage})</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 20px 0' }}>System Health</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>API Status</span>
+                    <CheckCircle2 size={18} color="#10b981" />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>DB Status</span>
+                    <CheckCircle2 size={18} color="#10b981" />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>Storage</span>
+                    <CheckCircle2 size={18} color="#10b981" />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>Backup</span>
+                    <CheckCircle2 size={18} color="#10b981" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 20px 0' }}>Quick Actions</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                
+                <button style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ color: '#3b82f6' }}><Building2 size={20} /></div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1e293b' }}>Add New Tenant</div>
+                </button>
+
+                <button style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ color: '#10b981' }}><FilePlus size={20} /></div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1e293b' }}>Create Invoice</div>
+                </button>
+
+                <button style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ color: '#8b5cf6' }}><Settings size={20} /></div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1e293b' }}>Manage Plans</div>
+                </button>
+
+                <button style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ color: '#f59e0b' }}><FileText size={20} /></div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1e293b' }}>View Reports</div>
+                </button>
+
+                <button style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ color: '#3b82f6' }}><Settings size={20} /></div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1e293b' }}>System Settings</div>
+                </button>
+
+                <button style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ color: '#ef4444' }}><FileSearch size={20} /></div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1e293b' }}>Audit Logs</div>
+                </button>
+
+              </div>
+            </div>
+
+          </div>
+
+          {/* Footer */}
+          <footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0 0 0', borderTop: '1px solid #e2e8f0', marginTop: 'auto' }}>
+            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+              © 2026 4D Expense. All rights reserved.
+            </div>
+            <div style={{ display: 'flex', gap: '24px' }}>
+              <a href="#" style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'none' }}>Documentation</a>
+              <a href="#" style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'none' }}>Support</a>
+              <a href="#" style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'none' }}>Privacy Policy</a>
+              <a href="#" style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'none' }}>Terms of Service</a>
+            </div>
+          </footer>
+
+        </div>
       </main>
     </div>
   );
-}
-
-function StatCard({ title, value, trend, icon: Icon, color }: any) {
-  return (
-    <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{title}</div>
-        <div style={{ backgroundColor: `${color}15`, padding: '8px', borderRadius: '10px' }}>
-          <Icon size={20} color={color} />
-        </div>
-      </div>
-      <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)' }}>{value}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: trend.startsWith('+') ? 'var(--status-green)' : 'var(--status-red)', fontWeight: 600 }}>
-        <ArrowUpRight size={16} /> {trend} this month
-      </div>
-    </div>
-  )
 }
