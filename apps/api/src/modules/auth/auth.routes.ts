@@ -27,47 +27,55 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
 
     // Create Tenant and User transactionally
-    const newTenant = await prisma.tenant.create({
-      data: {
-        name: companyName,
-        routingStrategy: determinedRouting,
-        employeeCount: employeeCount ? parseInt(employeeCount) : null,
-        numberOfBranches: numberOfBranches ? parseInt(numberOfBranches) : null,
-        annualTurnover: annualTurnover ? parseFloat(annualTurnover) : null,
-        gstin,
-        businessType,
-        dataSensitivity: dataSensitivity || 'STANDARD',
-        expectedTxVolume: expectedTxVolume ? parseInt(expectedTxVolume) : null,
-        enterpriseRequirements,
-        users: {
-          create: {
-            email,
-            password: hashedPassword,
+    try {
+      const newTenant = await prisma.tenant.create({
+        data: {
+          name: companyName,
+          routingStrategy: determinedRouting,
+          employeeCount: employeeCount ? parseInt(employeeCount) : null,
+          numberOfBranches: numberOfBranches ? parseInt(numberOfBranches) : null,
+          annualTurnover: annualTurnover ? parseFloat(annualTurnover) : null,
+          gstin,
+          businessType,
+          dataSensitivity: dataSensitivity || 'STANDARD',
+          expectedTxVolume: expectedTxVolume ? parseInt(expectedTxVolume) : null,
+          enterpriseRequirements,
+          users: {
+            create: {
+              email,
+              password: hashedPassword,
+            }
           }
+        },
+        include: { users: true }
+      });
+
+      const user = newTenant.users[0];
+
+      // Generate JWT
+      const token = fastify.jwt.sign({
+        tenantId: newTenant.id,
+        userId: user.id,
+        routingStrategy: newTenant.routingStrategy
+      }, { expiresIn: '7d' });
+
+      return reply.status(201).send({
+        message: 'Tenant and User created successfully',
+        token,
+        tenant: { 
+          id: newTenant.id, 
+          name: newTenant.name, 
+          routingStrategy: newTenant.routingStrategy,
+          dataSensitivity: newTenant.dataSensitivity
         }
-      },
-      include: { users: true }
-    });
-
-    const user = newTenant.users[0];
-
-    // Generate JWT
-    const token = fastify.jwt.sign({
-      tenantId: newTenant.id,
-      userId: user.id,
-      routingStrategy: newTenant.routingStrategy
-    }, { expiresIn: '7d' });
-
-    return reply.status(201).send({
-      message: 'Tenant and User created successfully',
-      token,
-      tenant: { 
-        id: newTenant.id, 
-        name: newTenant.name, 
-        routingStrategy: newTenant.routingStrategy,
-        dataSensitivity: newTenant.dataSensitivity
+      });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        return reply.status(400).send({ error: 'Email or Company Name already exists' });
       }
-    });
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Internal server error during registration', details: error.message });
+    }
   });
 
   // POST /api/v1/auth/login

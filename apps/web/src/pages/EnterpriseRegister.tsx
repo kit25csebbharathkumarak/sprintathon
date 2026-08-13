@@ -55,9 +55,8 @@ export default function EnterpriseRegister() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb' }}>
       {/* Top Navigation */}
       <div style={{ height: '70px', backgroundColor: 'white', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 40px', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/logo.png" alt="4D Expense Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
-          <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.5px' }}>4D Expense</span>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/logo.png" alt="4D Expense Logo" style={{ width: '140px', height: 'auto', objectFit: 'contain' }} />
         </div>
         <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 500 }}>
           <ArrowLeft size={16} /> Back to Portals
