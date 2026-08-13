@@ -37,7 +37,7 @@ export default function Workspace() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [activeTenant, setActiveTenant] = useState<Tenant | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'expenses' | 'employees' | 'policies' | 'vendors' | 'copilot' | 'audit' | 'tenancy'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'expenses' | 'reports' | 'analytics' | 'budgets' | 'employees' | 'policies' | 'vendors' | 'copilot' | 'audit' | 'tenancy'>('dashboard');
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
