@@ -107,7 +107,12 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     return reply.status(200).send({
       token,
-      tenant: { id: user.tenant.id, name: user.tenant.name }
+      tenant: { 
+        id: user.tenant.id, 
+        name: user.tenant.name,
+        routingStrategy: user.tenant.routingStrategy,
+        dataSensitivity: user.tenant.dataSensitivity
+      }
     });
   });
 }

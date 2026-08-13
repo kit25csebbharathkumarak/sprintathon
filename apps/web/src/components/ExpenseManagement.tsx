@@ -334,8 +334,8 @@ function FinanceView({ expenses, tenant, onRefresh }: { expenses: any[], tenant:
               </td>
               <td style={{ padding: '14px 12px', textAlign: 'right' }}>
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  {(tenant?.routingStrategy === 'SHARED' && (exp.status === 'PENDING' || exp.status === 'FLAGGED')) || 
-                   (tenant?.routingStrategy === 'DEDICATED' && (exp.status === 'MANAGER_APPROVED' || exp.status === 'FLAGGED')) ? (
+                  {((tenant?.routingStrategy || 'SHARED') === 'SHARED' && (exp.status === 'PENDING' || exp.status === 'FLAGGED')) || 
+                   ((tenant?.routingStrategy || 'SHARED') === 'DEDICATED' && (exp.status === 'MANAGER_APPROVED' || exp.status === 'FLAGGED')) ? (
                     <>
                       <button onClick={() => updateStatus(exp.id, 'APPROVED')} style={actionBtn('var(--status-green)')} title="Approve"><Check size={16} /></button>
                       <button onClick={() => updateStatus(exp.id, 'REJECTED')} style={actionBtn('var(--status-red)')} title="Reject"><X size={16} /></button>
