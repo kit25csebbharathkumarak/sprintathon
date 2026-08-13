@@ -8,7 +8,7 @@ export class AIService {
   }
 
   private async generateContentWithFallback(prompt: any, config?: any) {
-    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+    let modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
     let lastError: any = null;
     
     for (const modelName of modelsToTry) {
@@ -25,13 +25,26 @@ export class AIService {
         return response.response.text();
       } catch (e: any) {
         lastError = e;
-        if (e.message && (e.message.includes('not found') || e.message.includes('no longer available') || e.message.includes('not supported'))) {
+        if (e.message && (e.message.includes('not found') || e.message.includes('no longer available') || e.message.includes('not supported') || e.message.includes('404'))) {
           console.warn(`Model ${modelName} failed, trying next...`);
           continue;
         }
         throw e;
       }
     }
+    
+    // If all failed, let's fetch the actual allowed models for this API key so the user can see them!
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+      const data = await res.json();
+      if (data && data.models) {
+        const available = data.models.map((m: any) => m.name.replace('models/', '')).join(', ');
+        throw new Error(`${lastError.message}. YOUR KEY ONLY ALLOWS THESE MODELS: ${available}`);
+      }
+    } catch (fetchErr) {
+       // ignore
+    }
+    
     throw lastError;
   }
 
