@@ -33,19 +33,23 @@ export class AIService {
       }
     }
     
+    let modelsList = '';
     // If all failed, let's fetch the actual allowed models for this API key so the user can see them!
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
       const data = await res.json();
       if (data && data.models) {
-        const available = data.models.map((m: any) => m.name.replace('models/', '')).join(', ');
-        throw new Error(`${lastError.message}. YOUR KEY ONLY ALLOWS THESE MODELS: ${available}`);
+        modelsList = data.models.map((m: any) => m.name.replace('models/', '')).join(', ');
       }
     } catch (fetchErr) {
-       // ignore
+       console.error("Failed to fetch models list:", fetchErr);
     }
     
-    throw lastError;
+    if (modelsList) {
+       throw new Error(`${lastError.message} | AVAILABLE MODELS: ${modelsList}`);
+    } else {
+       throw lastError;
+    }
   }
 
   async processReceiptOCR(imageUrl: string) {
