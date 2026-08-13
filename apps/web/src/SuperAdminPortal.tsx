@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   Home, Building2, CreditCard, Receipt, BarChart3, Activity, 
   ArrowRightLeft, FileText, Link, Settings, 
-  CheckCircle2, ArrowRight, User, FilePlus, FileSearch
+  CheckCircle2, ArrowRight, User, FilePlus, FileSearch, Search
 } from 'lucide-react';
 import { 
   LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, 
@@ -205,7 +205,9 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
         {/* Scrollable Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
           
-          {/* Stat Cards Row */}
+          {activeTab === 'Overview' && (
+            <>
+              {/* Stat Cards Row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
             <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -466,6 +468,81 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
             </div>
 
           </div>
+          </>
+          )}
+
+          {activeTab === 'Tenants' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>Manage Tenants</h2>
+                  <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>View and manage all active organizations on the platform.</p>
+                </div>
+                <button onClick={() => setIsTenantModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem' }}>
+                  <Building2 size={16} /> Add New Tenant
+                </button>
+              </div>
+
+              <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input type="text" placeholder="Search tenants..." style={{ padding: '8px 12px 8px 32px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', width: '250px' }} />
+                  </div>
+                  <button onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', color: '#64748b', fontSize: '0.85rem' }}>
+                    <FileText size={16} /> Export CSV
+                  </button>
+                </div>
+                
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Tenant Name</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Plan Tier</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Active Users</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Status</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Total Tracked Spend</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500, textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allTenants.map((t: any) => (
+                      <tr key={t.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 600 }}>{t.name}</td>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#64748b' }}>
+                          <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: t.plan === 'Enterprise' ? '#eff6ff' : '#f3e8ff', color: t.plan === 'Enterprise' ? '#3b82f6' : '#a855f7', fontSize: '0.75rem', fontWeight: 600 }}>{t.plan}</span>
+                        </td>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#64748b' }}>{t.users} users</td>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', fontWeight: 500, color: t.status === 'Active' ? '#10b981' : '#ef4444' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: t.status === 'Active' ? '#10b981' : '#ef4444' }}></div>
+                            {t.status}
+                          </div>
+                        </td>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{t.revenue}</td>
+                        <td style={{ padding: '16px 8px', color: '#94a3b8', textAlign: 'right' }}>
+                           <button onClick={() => setPhase2ModalOpen({ isOpen: true, feature: 'Manage Tenant' })} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b' }}>Manage</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {allTenants.length === 0 && (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>No tenants found on the platform.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab !== 'Overview' && activeTab !== 'Tenants' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '400px', color: '#64748b' }}>
+              <Settings size={48} color="#e2e8f0" style={{ marginBottom: '16px' }} />
+              <h2 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>{activeTab} Module</h2>
+              <p style={{ margin: 0 }}>This section is currently under construction and will be available in Phase 2.</p>
+            </div>
+          )}
 
           {/* Footer */}
           <footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0 0 0', borderTop: '1px solid #e2e8f0', marginTop: 'auto' }}>
