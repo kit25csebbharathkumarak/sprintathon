@@ -140,10 +140,14 @@ export async function expenseRoutes(fastify: FastifyInstance) {
 
   // POST a receipt for OCR
   fastify.post('/ocr', async (request, reply) => {
-    // Simplified: expect an image URL in body
-    const { receiptUrl } = request.body as any;
-    const extractedData = await aiService.processReceiptOCR(receiptUrl);
-    return reply.status(200).send(extractedData);
+    try {
+      const { receiptUrl } = request.body as any;
+      const extractedData = await aiService.processReceiptOCR(receiptUrl);
+      return reply.status(200).send(extractedData);
+    } catch (e: any) {
+      console.error('OCR Route Error:', e);
+      return reply.status(500).send({ error: e.message || 'AI processing failed' });
+    }
   });
 
   // GET verify tamper hash ledger

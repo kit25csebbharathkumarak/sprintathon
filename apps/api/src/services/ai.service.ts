@@ -48,10 +48,14 @@ export class AIService {
         const buffer = Buffer.from(arrayBuffer);
         data = buffer.toString('base64');
         mimeType = response.headers.get('content-type') || 'image/jpeg';
-      } else if (imageUrl.startsWith('data:image')) {
+      } else if (imageUrl.startsWith('data:')) {
         const parts = imageUrl.split(';');
         mimeType = parts[0].split(':')[1];
         data = parts[1].split(',')[1];
+      }
+
+      if (!data) {
+         throw new Error("Could not extract image data from the provided URL or file.");
       }
 
       const promptText = "Extract the receipt details. Return a JSON object exactly matching the schema. If you cannot determine a value, make your best guess or return a default.";
@@ -77,9 +81,9 @@ export class AIService {
 
       const text = await this.generateContentWithFallback(prompt, config);
       return JSON.parse(text || '{}');
-    } catch (e) {
+    } catch (e: any) {
       console.error('OCR Error:', e);
-      return { amount: 0, vendor: 'Unknown', category: 'Other', confidence: 0 };
+      throw new Error(`AI OCR Failed: ${e.message}`);
     }
   }
 
