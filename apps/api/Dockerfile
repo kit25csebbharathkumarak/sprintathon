@@ -42,7 +42,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 WORKDIR /app/apps/api
 
-EXPOSE 3001
+EXPOSE 10000
 
 # Run DB migrations then start server
 CMD npx prisma migrate deploy && node dist/server.js
