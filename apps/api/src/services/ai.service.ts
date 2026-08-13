@@ -8,47 +8,20 @@ export class AIService {
   }
 
   private async generateContentWithFallback(prompt: any, config?: any) {
-    let modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
-    let lastError: any = null;
-    
-    for (const modelName of modelsToTry) {
-      try {
-        const model = this.ai.getGenerativeModel({ 
-          model: modelName,
-          generationConfig: config ? {
-            responseMimeType: config.responseMimeType,
-            responseSchema: config.responseSchema
-          } : undefined
-        });
-        
-        const response = await model.generateContent(prompt);
-        return response.response.text();
-      } catch (e: any) {
-        lastError = e;
-        if (e.message && (e.message.includes('not found') || e.message.includes('no longer available') || e.message.includes('not supported') || e.message.includes('404'))) {
-          console.warn(`Model ${modelName} failed, trying next...`);
-          continue;
-        }
-        throw e;
-      }
-    }
-    
-    let modelsList = '';
-    // If all failed, let's fetch the actual allowed models for this API key so the user can see them!
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
-      const data = await res.json();
-      if (data && data.models) {
-        modelsList = data.models.map((m: any) => m.name.replace('models/', '')).join(', ');
-      }
-    } catch (fetchErr) {
-       console.error("Failed to fetch models list:", fetchErr);
-    }
-    
-    if (modelsList) {
-       throw new Error(`${lastError.message} | AVAILABLE MODELS: ${modelsList}`);
-    } else {
-       throw lastError;
+      const modelName = 'gemini-2.5-flash';
+      const model = this.ai.getGenerativeModel({ 
+        model: modelName,
+        generationConfig: config ? {
+          responseMimeType: config.responseMimeType,
+          responseSchema: config.responseSchema
+        } : undefined
+      });
+      
+      const response = await model.generateContent(prompt);
+      return response.response.text();
+    } catch (e: any) {
+      throw new Error(`[gemini-2.5-flash] ${e.message}`);
     }
   }
 
