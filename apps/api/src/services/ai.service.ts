@@ -7,6 +7,26 @@ export class AIService {
     this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'MISSING' });
   }
 
+  private async generateContentWithFallback(params: any) {
+    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash-8b', 'gemini-pro'];
+    let lastError: any = null;
+    
+    for (const model of modelsToTry) {
+      try {
+        return await this.ai.models.generateContent({ ...params, model });
+      } catch (e: any) {
+        lastError = e;
+        // If it's a 404 or model not found, try the next one. Otherwise, throw.
+        if (e.message && (e.message.includes('not found') || e.message.includes('no longer available') || e.message.includes('not supported'))) {
+          console.warn(`Model ${model} failed, trying next...`);
+          continue;
+        }
+        throw e;
+      }
+    }
+    throw lastError;
+  }
+
   async processReceiptOCR(imageUrl: string) {
     try {
       if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set.");
@@ -29,8 +49,7 @@ export class AIService {
 
       const prompt = "Extract the receipt details. Return a JSON object exactly matching the schema. If you cannot determine a value, make your best guess or return a default.";
       
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+      const response = await this.generateContentWithFallback({
         contents: [
           { inlineData: { data, mimeType } },
           prompt
@@ -71,8 +90,7 @@ export class AIService {
         Return a JSON object with 'isAnomaly' (boolean), 'score' (number between 0.0 and 1.0 where 1.0 is highly anomalous), and 'reason' (short string).
       `;
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+      const response = await this.generateContentWithFallback({
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -110,8 +128,7 @@ export class AIService {
       User Query: ${prompt}
       `;
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+      const response = await this.generateContentWithFallback({
         contents: systemPrompt
       });
 
