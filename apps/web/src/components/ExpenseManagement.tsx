@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UploadCloud, FileText, Check, X, MessageSquare, Download, Filter, Plus } from 'lucide-react';
 import { API_BASE } from '../lib/api';
 
@@ -70,6 +70,9 @@ export default function ExpenseManagement() {
 }
 
 function ExpenseModal({ expense, onClose, onSaved }: { expense?: any, onClose: () => void, onSaved: () => void }) {
+  const [isScanning, setIsScanning] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
     amount: expense?.amount || '',
     vendor: expense?.vendor || '',
@@ -79,6 +82,44 @@ function ExpenseModal({ expense, onClose, onSaved }: { expense?: any, onClose: (
     project: expense?.project || 'Project Alpha',
     purpose: expense?.purpose || ''
   });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsScanning(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result;
+        
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE}/api/v1/expenses/ocr`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ receiptUrl: base64String })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => ({
+            ...prev,
+            amount: data.amount ? String(data.amount) : prev.amount,
+            vendor: data.vendor && data.vendor !== 'Unknown' ? data.vendor : prev.vendor,
+            category: data.category && data.category !== 'Other' ? data.category : prev.category
+          }));
+        }
+        setIsScanning(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error(err);
+      setIsScanning(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,10 +151,31 @@ function ExpenseModal({ expense, onClose, onSaved }: { expense?: any, onClose: (
       <div className="glass-panel" style={{ width: '500px', padding: '32px', maxHeight: '90vh', overflowY: 'auto' }}>
         <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '20px', color: 'var(--text-primary)' }}>{expense ? 'Edit Expense Claim' : 'Create Expense Claim'}</h3>
         
-        <div style={{ marginBottom: '20px', padding: '24px', border: '2px dashed var(--border-heavy)', borderRadius: '10px', textAlign: 'center', cursor: 'pointer', backgroundColor: 'var(--bg-primary)' }} className="table-row-hover">
-          <UploadCloud size={32} color="var(--accent-electric)" style={{ margin: '0 auto 12px' }} />
-          <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 600 }}>Click or drag receipt to upload</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>PNG, JPG or PDF (max 10MB)</div>
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          style={{ display: 'none' }} 
+          accept="image/png, image/jpeg, application/pdf"
+          onChange={handleFileUpload}
+        />
+        
+        <div 
+          onClick={() => !isScanning && fileInputRef.current?.click()}
+          style={{ marginBottom: '20px', padding: '24px', border: '2px dashed var(--border-heavy)', borderRadius: '10px', textAlign: 'center', cursor: isScanning ? 'wait' : 'pointer', backgroundColor: 'var(--bg-primary)' }} 
+          className={isScanning ? "" : "table-row-hover"}
+        >
+          {isScanning ? (
+            <div style={{ padding: '10px' }}>
+              <div style={{ fontSize: '1rem', color: 'var(--accent-electric)', fontWeight: 600, marginBottom: '8px' }}>Scanning with Gemini AI...</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Extracting details from receipt</div>
+            </div>
+          ) : (
+            <>
+              <UploadCloud size={32} color="var(--accent-electric)" style={{ margin: '0 auto 12px' }} />
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 600 }}>Click or drag receipt to upload</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>PNG, JPG or PDF (max 10MB)</div>
+            </>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
