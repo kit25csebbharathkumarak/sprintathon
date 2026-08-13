@@ -21,8 +21,21 @@ export default function LandingPage() {
             A simple, safe, and easy-to-use platform that helps you control spending.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', marginBottom: '40px' }}>
             <ShieldCheck size={20} /> 100% Secure & Private
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex' }}>
+              <img src="/user1.jpg" alt="Team Member 1" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '3px solid #1e3a8a', objectFit: 'cover', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+              <img src="/user2.jpg" alt="Team Member 2" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '3px solid #1e3a8a', objectFit: 'cover', marginLeft: '-16px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+              <img src="/user3.jpg" alt="Team Member 3" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '3px solid #1e3a8a', objectFit: 'cover', marginLeft: '-16px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+              <img src="/user4.jpg" alt="Team Member 4" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '3px solid #1e3a8a', objectFit: 'cover', marginLeft: '-16px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+            </div>
+            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+              Built by a dedicated team of<br/>
+              <span style={{ fontWeight: 600, color: 'white' }}>financial experts & engineers.</span>
+            </div>
           </div>
         </div>
       </div>
