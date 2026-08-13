@@ -8,7 +8,9 @@ import crypto from 'crypto';
 export async function expenseRoutes(fastify: FastifyInstance) {
   // GET all expenses for the current tenant
   fastify.get('/', async (request, reply) => {
+    const { tenantId } = (request as any).tenantContext;
     const expenses = await prisma.expense.findMany({
+      where: { tenantId },
       orderBy: { date: 'desc' },
     });
     return expenses;
