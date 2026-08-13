@@ -144,7 +144,9 @@ export default function Workspace() {
       <aside style={{ width: '260px', backgroundColor: 'var(--bg-sidebar)', color: '#e2e8f0', display: 'flex', flexDirection: 'column' }}>
         
         <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <img src="/logo.png" alt="4D Expense Logo" style={{ width: '140px', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '10px 16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' }}>
+            <img src="/logo.png" alt="4D Expense Logo" style={{ height: '32px', width: 'auto', objectFit: 'contain', display: 'block' }} />
+          </div>
           <div>
             <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Workspace: {activeTenant?.name}</span>
           </div>

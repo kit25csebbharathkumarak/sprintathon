@@ -39,7 +39,7 @@ export default function EnterpriseRegister() {
       });
       
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
+      if (!res.ok) throw new Error(data.error + (data.details ? ` - ${data.details}` : '') || 'Registration failed');
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('tenant', JSON.stringify(data.tenant));
@@ -56,7 +56,7 @@ export default function EnterpriseRegister() {
       {/* Top Navigation */}
       <div style={{ height: '70px', backgroundColor: 'white', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 40px', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo.png" alt="4D Expense Logo" style={{ width: '140px', height: 'auto', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="4D Expense Logo" style={{ height: '44px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
         </div>
         <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 500 }}>
           <ArrowLeft size={16} /> Back to Portals
