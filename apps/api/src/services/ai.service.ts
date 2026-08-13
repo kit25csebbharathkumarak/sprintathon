@@ -30,7 +30,7 @@ export class AIService {
       const prompt = "Extract the receipt details. Return a JSON object exactly matching the schema. If you cannot determine a value, make your best guess or return a default.";
       
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-1.5-flash',
         contents: [
           { inlineData: { data, mimeType } },
           prompt
@@ -72,7 +72,7 @@ export class AIService {
       `;
 
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -111,7 +111,7 @@ export class AIService {
       `;
 
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-1.5-flash',
         contents: systemPrompt
       });
 
