@@ -12,32 +12,47 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const totalTenants = await prisma.tenant.count();
       const totalUsers = await prisma.user.count();
       
-      // Subscription Overview (DEDICATED vs SHARED)
-      const dedicatedCount = await prisma.tenant.count({ where: { routingStrategy: 'DEDICATED' }});
-      const sharedCount = await prisma.tenant.count({ where: { routingStrategy: 'SHARED' }});
+      const allTenantsRaw = await prisma.tenant.findMany();
+      let totalRevenue = 0;
+      let enterpriseCount = 0;
+      let professionalCount = 0;
+      let starterCount = 0;
 
-      // Calculate mock SaaS metrics instead of internal tenant expenses
-      const totalRevenue = (dedicatedCount * 49900) + (sharedCount * 9900);
-      const expensesTracked = dedicatedCount + sharedCount; // Active Subscriptions
-      const invoicesGenerated = dedicatedCount + sharedCount; 
+      const tenantPlans = allTenantsRaw.map(t => {
+        let plan = 'Starter';
+        let fee = 900;
+        if (t.routingStrategy === 'DEDICATED') {
+          plan = 'Enterprise';
+          fee = 49900;
+          enterpriseCount++;
+        } else if (t.dataSensitivity === 'HIGH' || t.dataSensitivity === 'STRICT') {
+          plan = 'Professional';
+          fee = 9900;
+          professionalCount++;
+        } else {
+          starterCount++;
+        }
+        totalRevenue += fee;
+        return { ...t, plan, fee };
+      });
 
-      // Mock top tenants by SaaS subscription value
-      const allTenantsList = await prisma.tenant.findMany({ take: 5 });
+      const expensesTracked = tenantPlans.length; // Active Subscriptions
+      const invoicesGenerated = tenantPlans.length; 
+
       const topTenantsColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
-      const topTenants = allTenantsList.map((t, i) => ({
+      const topTenants = [...tenantPlans].sort((a, b) => b.fee - a.fee).slice(0, 5).map((t, i) => ({
         name: t.name,
-        value: t.routingStrategy === 'DEDICATED' ? 49900 : 9900,
+        value: t.fee,
         color: topTenantsColors[i % topTenantsColors.length]
-      })).sort((a, b) => b.value - a.value);
-
+      }));
 
       const subscriptionData = [
-        { name: 'Enterprise', value: dedicatedCount, percentage: totalTenants > 0 ? `${Math.round(dedicatedCount/totalTenants*100)}%` : '0%', color: '#3b82f6' },
-        { name: 'Professional', value: sharedCount, percentage: totalTenants > 0 ? `${Math.round(sharedCount/totalTenants*100)}%` : '0%', color: '#8b5cf6' },
+        { name: 'Enterprise', value: enterpriseCount, percentage: tenantPlans.length > 0 ? `${Math.round(enterpriseCount/tenantPlans.length*100)}%` : '0%', color: '#3b82f6' },
+        { name: 'Professional', value: professionalCount, percentage: tenantPlans.length > 0 ? `${Math.round(professionalCount/tenantPlans.length*100)}%` : '0%', color: '#8b5cf6' },
+        { name: 'Starter', value: starterCount, percentage: tenantPlans.length > 0 ? `${Math.round(starterCount/tenantPlans.length*100)}%` : '0%', color: '#10b981' },
       ];
 
       // Recent Activity
-      // Let's get the 5 most recently created tenants
       const recentTenants = await prisma.tenant.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5
@@ -53,19 +68,27 @@ export async function adminRoutes(fastify: FastifyInstance) {
       }));
 
       // All Tenants Table Data
-      const allTenantsList = await prisma.tenant.findMany({
+      const tenantsWithUsers = await prisma.tenant.findMany({
         include: { _count: { select: { users: true } } }
       });
 
-      const allTenants = allTenantsList.map((t) => {
-        const subFee = t.routingStrategy === 'DEDICATED' ? 49900 : 9900;
+      const allTenants = tenantsWithUsers.map((t) => {
+        let plan = 'Starter';
+        let fee = 900;
+        if (t.routingStrategy === 'DEDICATED') {
+          plan = 'Enterprise';
+          fee = 49900;
+        } else if (t.dataSensitivity === 'HIGH' || t.dataSensitivity === 'STRICT') {
+          plan = 'Professional';
+          fee = 9900;
+        }
         return {
           id: t.id,
           name: t.name,
-          plan: t.routingStrategy === 'DEDICATED' ? 'Enterprise' : 'Professional',
+          plan: plan,
           users: t._count.users,
           status: 'Active',
-          revenue: `₹${subFee.toLocaleString()}/mo`
+          revenue: `₹${fee.toLocaleString()}/mo`
         };
       });
 
