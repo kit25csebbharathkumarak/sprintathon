@@ -78,6 +78,47 @@ export class AIService {
     }
   }
 
+  async determineRoutingStrategy(portfolio: any) {
+    try {
+      if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set.");
+      
+      const promptText = `
+        You are an expert database architect AI.
+        Analyze this company's profile to determine their tenancy routing strategy: ${JSON.stringify(portfolio)}
+        
+        Guidelines:
+        - Small/medium businesses with standard needs should be on "SHARED" (Postgres RLS).
+        - High volume (e.g. >10000 transactions), enterprise requirements, or STRICT data sensitivity MUST be on "DEDICATED".
+        
+        Return a JSON object with 'strategy' ("SHARED" or "DEDICATED") and 'reason' (a professional, 1-2 sentence explanation addressed to the user of why this strategy was automatically chosen for their specific company profile).
+      `;
+
+      const config = {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: SchemaType.OBJECT,
+          properties: {
+            strategy: { type: SchemaType.STRING, description: 'Must be SHARED or DEDICATED' },
+            reason: { type: SchemaType.STRING, description: 'Explanation for the routing decision' }
+          },
+          required: ['strategy', 'reason']
+        }
+      };
+
+      const text = await this.generateContentWithFallback(promptText, config);
+      const parsed = JSON.parse(text || '{}');
+      
+      if (parsed.strategy !== 'DEDICATED' && parsed.strategy !== 'SHARED') {
+        parsed.strategy = 'SHARED';
+      }
+      
+      return parsed;
+    } catch (e: any) {
+      console.error('Routing Strategy Error:', e);
+      return { strategy: 'SHARED', reason: 'Defaulted to shared routing pool due to AI evaluation timeout or error.' };
+    }
+  }
+
   async runAnomalyDetection(expenseData: any, tenantHistory: any[]) {
     try {
       if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set.");

@@ -306,8 +306,23 @@ export default function Workspace() {
              <div className="glass-panel" style={{ padding: '24px' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-primary)' }}>Adaptive Tenancy Router Details</h3>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-                4D Developers automatically promotes high-volume enterprise profiles to dedicated schemas.
+                Our intelligent engine automatically evaluates your company portfolio and dynamically allocates you to the optimal database architecture.
               </p>
+
+              {activeTenant?.routingReason && (
+                <div style={{ marginBottom: '24px', padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(37, 99, 235, 0.08)', border: '1px solid var(--accent-electric)', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  <div style={{ padding: '8px', backgroundColor: 'rgba(37, 99, 235, 0.15)', borderRadius: '8px', color: 'var(--accent-electric)' }}>
+                    <Network size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontWeight: 600, color: 'var(--accent-electric)', marginBottom: '6px', fontSize: '0.95rem' }}>AI Architecture Decision</h4>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
+                      {activeTenant.routingReason}
+                    </p>
+                  </div>
+                </div>
+              )}
+
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div style={{ background: activeTenant?.routingStrategy === 'SHARED' ? 'rgba(37, 99, 235, 0.05)' : 'transparent', border: activeTenant?.routingStrategy === 'SHARED' ? '1px solid var(--accent-electric)' : '1px solid var(--border-color)', padding: '20px', borderRadius: '12px' }}>

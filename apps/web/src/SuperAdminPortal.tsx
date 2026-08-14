@@ -569,8 +569,8 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
           {activeTab === 'Transactions' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '100%' }}>
               <div>
-                <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>Platform Transactions</h2>
-                <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>View all platform expenses across all tenants.</p>
+                <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>SaaS Billing Transactions</h2>
+                <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>View subscription and usage billing transactions for all tenants.</p>
               </div>
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', flex: 1 }}>
                 {tabLoading ? (
@@ -581,8 +581,8 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                       <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                         <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Date</th>
                         <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Tenant</th>
-                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>User</th>
-                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Category</th>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Invoice #</th>
+                        <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Description</th>
                         <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Status</th>
                         <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500, textAlign: 'right' }}>Amount</th>
                       </tr>
@@ -592,10 +592,10 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                         <tr key={tx.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                           <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{new Date(tx.date).toLocaleDateString()}</td>
                           <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{tx.tenant?.name || 'Unknown'}</td>
-                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{tx.user?.name || tx.user?.email}</td>
-                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{tx.category || 'Other'}</td>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{tx.invoiceNumber}</td>
+                          <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#64748b' }}>{tx.category}</td>
                           <td style={{ padding: '14px 8px', fontSize: '0.85rem' }}>
-                            <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: tx.status === 'APPROVED' ? '#d1fae5' : tx.status === 'PENDING' ? '#fef3c7' : '#fee2e2', color: tx.status === 'APPROVED' ? '#10b981' : tx.status === 'PENDING' ? '#d97706' : '#ef4444', fontWeight: 500, fontSize: '0.75rem' }}>{tx.status}</span>
+                            <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: tx.status === 'PAID' ? '#d1fae5' : tx.status === 'PENDING' ? '#fef3c7' : '#fee2e2', color: tx.status === 'PAID' ? '#10b981' : tx.status === 'PENDING' ? '#d97706' : '#ef4444', fontWeight: 500, fontSize: '0.75rem' }}>{tx.status}</span>
                           </td>
                           <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 600, textAlign: 'right' }}>₹{tx.amount.toLocaleString()}</td>
                         </tr>

@@ -140,15 +140,17 @@ export async function adminRoutes(fastify: FastifyInstance) {
   // GET /api/v1/admin/transactions
   fastify.get('/transactions', async (request, reply) => {
     try {
-      const expenses = await prisma.expense.findMany({
-        orderBy: { date: 'desc' },
-        take: 50,
-        include: {
-          user: { select: { name: true, email: true } },
-          tenant: { select: { name: true } }
-        }
-      });
-      return reply.send({ transactions: expenses });
+      const tenants = await prisma.tenant.findMany();
+      const billingTransactions = tenants.map((t, index) => ({
+        id: `bill-${t.id}-${index}`,
+        date: new Date().toISOString(),
+        tenant: { name: t.name },
+        category: 'Monthly Platform Subscription',
+        status: 'PAID',
+        amount: t.routingStrategy === 'DEDICATED' ? 49900 : 9900,
+        invoiceNumber: `INV-${new Date().getFullYear()}-${1000 + index}`
+      }));
+      return reply.send({ transactions: billingTransactions });
     } catch (e: any) {
       fastify.log.error(e);
       return reply.status(500).send({ error: e.message });

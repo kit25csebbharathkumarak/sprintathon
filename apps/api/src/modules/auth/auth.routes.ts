@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../../config/db';
 import bcrypt from 'bcryptjs';
+import { aiService } from '../../services/ai.service';
 
 export async function authRoutes(fastify: FastifyInstance) {
   
@@ -20,18 +21,19 @@ export async function authRoutes(fastify: FastifyInstance) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Smart Routing Logic: High volume or strict sensitivity -> Dedicated Schema
-    let determinedRouting = 'SHARED';
-    if ((expectedTxVolume && expectedTxVolume > 100000) || dataSensitivity === 'STRICT') {
-      determinedRouting = 'DEDICATED';
-    }
+    // AI-driven Smart Routing Logic
+    const routingDecision = await aiService.determineRoutingStrategy({
+      companyName, employeeCount, numberOfBranches, annualTurnover,
+      businessType, dataSensitivity, expectedTxVolume, enterpriseRequirements
+    });
 
     // Create Tenant and User transactionally
     try {
       const newTenant = await prisma.tenant.create({
         data: {
           name: companyName,
-          routingStrategy: determinedRouting,
+          routingStrategy: routingDecision.strategy,
+          routingReason: routingDecision.reason,
           employeeCount: employeeCount ? parseInt(employeeCount) : null,
           numberOfBranches: numberOfBranches ? parseInt(numberOfBranches) : null,
           annualTurnover: annualTurnover ? parseFloat(annualTurnover) : null,

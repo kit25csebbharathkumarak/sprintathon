@@ -12,6 +12,7 @@ model Tenant {
   id              String    @id @default(uuid())
   name            String
   routingStrategy String    @default("SHARED") // "SHARED" or "DEDICATED"
+  routingReason   String?
   schema          String    @default("public")
 
   // Business Profile Fields
