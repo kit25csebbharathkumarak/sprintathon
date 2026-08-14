@@ -150,7 +150,7 @@ export default function Workspace() {
         
         <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '10px 16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' }}>
-            <img src="/logo.png?v=3" alt="4D Expense Logo" style={{ height: '32px', width: 'auto', objectFit: 'contain', display: 'block' }} />
+            <img src="/logo.png?v=3" alt="4D Expense Logo" style={{ height: '64px', width: 'auto', objectFit: 'contain', display: 'block' }} />
           </div>
           <div>
             <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Workspace: {activeTenant?.name}</span>
