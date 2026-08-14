@@ -10,10 +10,10 @@ export default function LandingPage() {
         <div style={{ maxWidth: '480px', position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px' }}>
             <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 24px rgba(0,0,0,0.2)' }}>
-              <img src="/logo.png?v=3" alt="4D Expense Logo" style={{ height: '220px', width: '220px', objectFit: 'contain', display: 'block' }} />
+              <img src="/logo.png?v=3" alt="4D Expense Logo" style={{ height: '440px', width: '440px', objectFit: 'contain', display: 'block' }} />
             </div>
           </div>
-          
+
           <h1 style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1.1, marginBottom: '24px' }}>
             Easily track and manage your expenses.
           </h1>
@@ -27,20 +27,20 @@ export default function LandingPage() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-              Built by a dedicated team of<br/>
+              Built by a dedicated team of<br />
               <span style={{ fontWeight: 600, color: 'white' }}>financial experts & engineers.</span>
             </div>
           </div>
         </div>
       </div>
-      
+
       <div className="auth-right">
         <div className="auth-form-wrapper" style={{ maxWidth: '500px' }}>
           <h2 className="auth-title">Welcome to 4D Expense</h2>
           <p className="auth-subtitle">Choose how to log in</p>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div 
+            <div
               onClick={() => navigate('/enterprise/login')}
               style={{ padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-electric)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -56,7 +56,7 @@ export default function LandingPage() {
               <ArrowRight size={20} color="var(--text-muted)" />
             </div>
 
-            <div 
+            <div
               onClick={() => navigate('/admin/login')}
               style={{ padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-surface)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#F5A623'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -72,7 +72,7 @@ export default function LandingPage() {
               <ArrowRight size={20} color="var(--text-muted)" />
             </div>
           </div>
-          
+
           <div style={{ marginTop: '40px', textAlign: 'center' }}>
             <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
               New here? <span onClick={() => navigate('/enterprise/register')} style={{ color: 'var(--accent-electric)', fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>Create an account</span>
