@@ -153,7 +153,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
         {/* Logo Area */}
         <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="4D Expense Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain', display: 'block' }} />
+            <img src="/logo.png?v=3" alt="4D Expense Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain', display: 'block' }} />
           </div>
           <div style={{ fontSize: '0.75rem', marginTop: '4px', paddingLeft: '42px', color: '#cbd5e1' }}>SaaS Admin Portal</div>
         </div>

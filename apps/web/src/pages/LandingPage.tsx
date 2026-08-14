@@ -10,7 +10,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: '480px', position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px' }}>
             <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 24px rgba(0,0,0,0.2)' }}>
-              <img src="/logo.png" alt="4D Expense Logo" style={{ height: '220px', width: '220px', objectFit: 'contain', display: 'block' }} />
+              <img src="/logo.png?v=3" alt="4D Expense Logo" style={{ height: '220px', width: '220px', objectFit: 'contain', display: 'block' }} />
             </div>
           </div>
           
