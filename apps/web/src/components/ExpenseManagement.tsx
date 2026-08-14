@@ -319,8 +319,8 @@ function EmployeeView({ expenses, tenant, onAddClick, onEditClick, onRefresh }: 
                         <button onClick={() => handleDelete(exp.id)} style={{ background: 'transparent', border: '1px solid var(--status-red)', color: 'var(--status-red)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500 }}>Delete</button>
                       </>
                     )}
-                    {/* Demo intermediate approval for DEDICATED routing */}
-                    {tenant?.routingStrategy === 'DEDICATED' && exp.status === 'PENDING' && (
+                    {/* Demo intermediate approval for ISOLATED_DATABASE routing */}
+                    {['ISOLATED_DATABASE', 'DEDICATED'].includes(tenant?.routingStrategy) && exp.status === 'PENDING' && (
                        <button onClick={async () => {
                          const t = localStorage.getItem('token');
                          await fetch(`${API_BASE}/api/v1/expenses/${exp.id}`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'MANAGER_APPROVED' }) });
@@ -413,8 +413,8 @@ function FinanceView({ expenses, tenant, onRefresh }: { expenses: any[], tenant:
               </td>
               <td style={{ padding: '14px 12px', textAlign: 'right' }}>
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  {((tenant?.routingStrategy || 'SHARED') === 'SHARED' && (exp.status === 'PENDING' || exp.status === 'FLAGGED')) || 
-                   ((tenant?.routingStrategy || 'SHARED') === 'DEDICATED' && (exp.status === 'MANAGER_APPROVED' || exp.status === 'FLAGGED')) ? (
+                  {((['SHARED_SCHEMA', 'SHARED', 'ISOLATED_SCHEMA'].includes(tenant?.routingStrategy || 'SHARED_SCHEMA')) && (exp.status === 'PENDING' || exp.status === 'FLAGGED')) || 
+                   ((['ISOLATED_DATABASE', 'DEDICATED'].includes(tenant?.routingStrategy)) && (exp.status === 'MANAGER_APPROVED' || exp.status === 'FLAGGED')) ? (
                     <>
                       <button onClick={() => updateStatus(exp.id, 'APPROVED')} style={actionBtn('var(--status-green)')} title="Approve"><Check size={16} /></button>
                       <button onClick={() => updateStatus(exp.id, 'REJECTED')} style={actionBtn('var(--status-red)')} title="Reject"><X size={16} /></button>

@@ -325,23 +325,33 @@ export default function Workspace() {
               )}
 
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div style={{ background: activeTenant?.routingStrategy === 'SHARED' ? 'rgba(37, 99, 235, 0.05)' : 'transparent', border: activeTenant?.routingStrategy === 'SHARED' ? '1px solid var(--accent-electric)' : '1px solid var(--border-color)', padding: '20px', borderRadius: '12px' }}>
-                  <h4 style={{ color: activeTenant?.routingStrategy === 'SHARED' ? 'var(--accent-electric)' : 'var(--text-primary)', marginBottom: '8px', fontWeight: 600 }}>Shared Schema Pool (Postgres RLS)</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+                <div style={{ background: (activeTenant?.routingStrategy === 'SHARED_SCHEMA' || activeTenant?.routingStrategy === 'SHARED') ? 'rgba(37, 99, 235, 0.05)' : 'transparent', border: (activeTenant?.routingStrategy === 'SHARED_SCHEMA' || activeTenant?.routingStrategy === 'SHARED') ? '1px solid var(--accent-electric)' : '1px solid var(--border-color)', padding: '20px', borderRadius: '12px' }}>
+                  <h4 style={{ color: (activeTenant?.routingStrategy === 'SHARED_SCHEMA' || activeTenant?.routingStrategy === 'SHARED') ? 'var(--accent-electric)' : 'var(--text-primary)', marginBottom: '8px', fontWeight: 600 }}>Shared Schema Pool (Postgres RLS)</h4>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
                     Designed for standard volume companies. Isolates data securely via row-level security.
                   </p>
-                  {activeTenant?.routingStrategy === 'SHARED' && (
+                  {(activeTenant?.routingStrategy === 'SHARED_SCHEMA' || activeTenant?.routingStrategy === 'SHARED') && (
                     <span style={{ padding: '4px 8px', background: 'var(--accent-electric)', color: 'white', fontSize: '0.75rem', borderRadius: '4px', fontWeight: 600 }}>Your active routing strategy</span>
                   )}
                 </div>
 
-                <div style={{ background: activeTenant?.routingStrategy === 'DEDICATED' ? 'var(--status-amber-bg)' : 'transparent', border: activeTenant?.routingStrategy === 'DEDICATED' ? '1px solid var(--status-amber)' : '1px solid var(--border-color)', padding: '20px', borderRadius: '12px' }}>
-                  <h4 style={{ color: activeTenant?.routingStrategy === 'DEDICATED' ? 'var(--status-amber)' : 'var(--text-primary)', marginBottom: '8px', fontWeight: 600 }}>Dedicated Tenant Schema</h4>
+                <div style={{ background: activeTenant?.routingStrategy === 'ISOLATED_SCHEMA' ? 'rgba(139, 92, 246, 0.05)' : 'transparent', border: activeTenant?.routingStrategy === 'ISOLATED_SCHEMA' ? '1px solid #8b5cf6' : '1px solid var(--border-color)', padding: '20px', borderRadius: '12px' }}>
+                  <h4 style={{ color: activeTenant?.routingStrategy === 'ISOLATED_SCHEMA' ? '#8b5cf6' : 'var(--text-primary)', marginBottom: '8px', fontWeight: 600 }}>Isolated Tenant Schema</h4>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                    For high-volume transaction expected profiles or STRICT data sensitivity requirements.
+                    For companies with high data sensitivity. Uses dedicated Postgres schemas to physically partition tenant data.
                   </p>
-                  {activeTenant?.routingStrategy === 'DEDICATED' && (
+                  {activeTenant?.routingStrategy === 'ISOLATED_SCHEMA' && (
+                    <span style={{ padding: '4px 8px', background: '#8b5cf6', color: 'white', fontSize: '0.75rem', borderRadius: '4px', fontWeight: 600 }}>Your active routing strategy</span>
+                  )}
+                </div>
+
+                <div style={{ background: (activeTenant?.routingStrategy === 'ISOLATED_DATABASE' || activeTenant?.routingStrategy === 'DEDICATED') ? 'var(--status-amber-bg)' : 'transparent', border: (activeTenant?.routingStrategy === 'ISOLATED_DATABASE' || activeTenant?.routingStrategy === 'DEDICATED') ? '1px solid var(--status-amber)' : '1px solid var(--border-color)', padding: '20px', borderRadius: '12px' }}>
+                  <h4 style={{ color: (activeTenant?.routingStrategy === 'ISOLATED_DATABASE' || activeTenant?.routingStrategy === 'DEDICATED') ? 'var(--status-amber)' : 'var(--text-primary)', marginBottom: '8px', fontWeight: 600 }}>Dedicated Isolated Database</h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                    For high-volume transaction expected profiles or STRICT data sensitivity requirements. Complete physical isolation.
+                  </p>
+                  {(activeTenant?.routingStrategy === 'ISOLATED_DATABASE' || activeTenant?.routingStrategy === 'DEDICATED') && (
                     <span style={{ padding: '4px 8px', background: 'var(--status-amber)', color: 'white', fontSize: '0.75rem', borderRadius: '4px', fontWeight: 600 }}>Your active routing strategy</span>
                   )}
                 </div>

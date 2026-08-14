@@ -21,11 +21,11 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const tenantPlans = allTenantsRaw.map(t => {
         let plan = 'Starter';
         let fee = 900;
-        if (t.routingStrategy === 'DEDICATED') {
+        if (t.routingStrategy === 'ISOLATED_DATABASE' || t.routingStrategy === 'DEDICATED') {
           plan = 'Enterprise';
           fee = 49900;
           enterpriseCount++;
-        } else if (t.dataSensitivity === 'HIGH' || t.dataSensitivity === 'STRICT') {
+        } else if (t.routingStrategy === 'ISOLATED_SCHEMA' || t.dataSensitivity === 'HIGH' || t.dataSensitivity === 'STRICT') {
           plan = 'Professional';
           fee = 9900;
           professionalCount++;
@@ -75,10 +75,10 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const allTenants = tenantsWithUsers.map((t) => {
         let plan = 'Starter';
         let fee = 900;
-        if (t.routingStrategy === 'DEDICATED') {
+        if (t.routingStrategy === 'ISOLATED_DATABASE' || t.routingStrategy === 'DEDICATED') {
           plan = 'Enterprise';
           fee = 49900;
-        } else if (t.dataSensitivity === 'HIGH' || t.dataSensitivity === 'STRICT') {
+        } else if (t.routingStrategy === 'ISOLATED_SCHEMA' || t.dataSensitivity === 'HIGH' || t.dataSensitivity === 'STRICT') {
           plan = 'Professional';
           fee = 9900;
         }
@@ -128,7 +128,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const { name, plan } = request.body as any;
       if (!name) return reply.status(400).send({ error: 'Tenant name is required' });
 
-      const routingStrategy = plan === 'Enterprise' ? 'DEDICATED' : 'SHARED';
+      const routingStrategy = plan === 'Enterprise' ? 'ISOLATED_DATABASE' : (plan === 'Professional' ? 'ISOLATED_SCHEMA' : 'SHARED_SCHEMA');
       
       const tenant = await prisma.tenant.create({
         data: {
@@ -155,7 +155,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         tenant: { name: t.name },
         category: 'Monthly Platform Subscription',
         status: 'PAID',
-        amount: t.routingStrategy === 'DEDICATED' ? 49900 : 9900,
+        amount: t.routingStrategy === 'ISOLATED_DATABASE' || t.routingStrategy === 'DEDICATED' ? 49900 : (t.routingStrategy === 'ISOLATED_SCHEMA' || t.dataSensitivity === 'HIGH' ? 9900 : 900),
         invoiceNumber: `INV-${new Date().getFullYear()}-${1000 + index}`
       }));
       return reply.send({ transactions: billingTransactions });

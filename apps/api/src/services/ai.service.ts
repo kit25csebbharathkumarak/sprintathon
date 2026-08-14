@@ -87,10 +87,11 @@ export class AIService {
         Analyze this company's profile to determine their tenancy routing strategy: ${JSON.stringify(portfolio)}
         
         Guidelines:
-        - Small/medium businesses with standard needs should be on "SHARED" (Postgres RLS).
-        - High volume (e.g. >10000 transactions), enterprise requirements, or STRICT data sensitivity MUST be on "DEDICATED".
+        - Small/medium businesses with standard needs or STANDARD sensitivity should be on "SHARED_SCHEMA" (Postgres RLS).
+        - Businesses with High Sensitivity (PII/Financial Edge) should be on "ISOLATED_SCHEMA".
+        - High volume (e.g. >10000 transactions), enterprise requirements, or STRICT data sensitivity MUST be on "ISOLATED_DATABASE".
         
-        Return a JSON object with 'strategy' ("SHARED" or "DEDICATED") and 'reason' (a professional, 1-2 sentence explanation addressed to the user of why this strategy was automatically chosen for their specific company profile).
+        Return a JSON object with 'strategy' ("SHARED_SCHEMA", "ISOLATED_SCHEMA", or "ISOLATED_DATABASE") and 'reason' (a professional, 1-2 sentence explanation addressed to the user of why this strategy was automatically chosen for their specific company profile).
       `;
 
       const config = {
@@ -98,7 +99,7 @@ export class AIService {
         responseSchema: {
           type: SchemaType.OBJECT,
           properties: {
-            strategy: { type: SchemaType.STRING, description: 'Must be SHARED or DEDICATED' },
+            strategy: { type: SchemaType.STRING, description: 'Must be SHARED_SCHEMA, ISOLATED_SCHEMA, or ISOLATED_DATABASE' },
             reason: { type: SchemaType.STRING, description: 'Explanation for the routing decision' }
           },
           required: ['strategy', 'reason']
@@ -108,14 +109,14 @@ export class AIService {
       const text = await this.generateContentWithFallback(promptText, config);
       const parsed = JSON.parse(text || '{}');
       
-      if (parsed.strategy !== 'DEDICATED' && parsed.strategy !== 'SHARED') {
-        parsed.strategy = 'SHARED';
+      if (parsed.strategy !== 'ISOLATED_DATABASE' && parsed.strategy !== 'ISOLATED_SCHEMA' && parsed.strategy !== 'SHARED_SCHEMA') {
+        parsed.strategy = 'SHARED_SCHEMA';
       }
       
       return parsed;
     } catch (e: any) {
       console.error('Routing Strategy Error:', e);
-      return { strategy: 'SHARED', reason: 'Defaulted to shared routing pool due to AI evaluation timeout or error.' };
+      return { strategy: 'SHARED_SCHEMA', reason: 'Defaulted to shared routing pool due to AI evaluation timeout or error.' };
     }
   }
 
