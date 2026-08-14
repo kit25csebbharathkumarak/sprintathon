@@ -508,9 +508,6 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                   <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>Manage Tenants</h2>
                   <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>View and manage all active organizations on the platform.</p>
                 </div>
-                <button onClick={() => setIsTenantModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem' }}>
-                  <Building2 size={16} /> Add New Tenant
-                </button>
               </div>
 
               <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', flex: 1 }}>
@@ -545,7 +542,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                           </div>
                         </td>
                         <td style={{ padding: '16px 8px', color: '#94a3b8', textAlign: 'right' }}>
-                           <button onClick={() => setManageTenantModal({ isOpen: true, tenant: t })} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b' }}>Manage</button>
+                           <button onClick={(e) => { e.stopPropagation(); setManageTenantModal({ isOpen: true, tenant: t }); }} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b', position: 'relative', zIndex: 10 }}>Manage</button>
                         </td>
                       </tr>
                     ))}
