@@ -171,7 +171,10 @@ export class AIService {
       return text || "I'm sorry, I couldn't generate a response.";
     } catch (e: any) {
       console.error('Copilot Error:', e);
-      return `AI Connection Error: ${e.message || "Failed to generate content."}`;
+      if (e.message?.includes('429') || e.message?.includes('quota') || e.message?.toLowerCase().includes('too many requests')) {
+        return "I'm sorry, but my AI services are currently experiencing exceptionally high traffic or have reached their API quota limits. Please try again later, or contact your SaaS administrator to upgrade your AI capacity plan.";
+      }
+      return `I encountered an unexpected error while processing your request. Please try again later. (Error: ${e.message || "Unknown"})`;
     }
   }
 }
