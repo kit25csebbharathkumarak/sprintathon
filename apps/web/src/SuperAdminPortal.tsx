@@ -23,6 +23,9 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantPlan, setNewTenantPlan] = useState('Enterprise');
   const [phase2ModalOpen, setPhase2ModalOpen] = useState<{ isOpen: boolean; feature: string }>({ isOpen: false, feature: '' });
+  
+  const [manageTenantModal, setManageTenantModal] = useState<{ isOpen: boolean; tenant: any | null }>({ isOpen: false, tenant: null });
+  const [manageSubModal, setManageSubModal] = useState<{ isOpen: boolean; tenant: any | null }>({ isOpen: false, tenant: null });
 
   const navItems = [
     { name: 'Overview', icon: Home, id: 'Overview' },
@@ -528,10 +531,8 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                   <thead>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Tenant Name</th>
-                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Plan Tier</th>
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Active Users</th>
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Status</th>
-                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Subscription Fee</th>
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500, textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
@@ -539,9 +540,6 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                     {allTenants.map((t: any) => (
                       <tr key={t.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 600 }}>{t.name}</td>
-                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#64748b' }}>
-                          <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: t.plan === 'Enterprise' ? '#eff6ff' : '#f3e8ff', color: t.plan === 'Enterprise' ? '#3b82f6' : '#a855f7', fontSize: '0.75rem', fontWeight: 600 }}>{t.plan}</span>
-                        </td>
                         <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#64748b' }}>{t.users} users</td>
                         <td style={{ padding: '16px 8px', fontSize: '0.85rem', fontWeight: 500, color: t.status === 'Active' ? '#10b981' : '#ef4444' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -549,9 +547,8 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                             {t.status}
                           </div>
                         </td>
-                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{t.revenue}</td>
                         <td style={{ padding: '16px 8px', color: '#94a3b8', textAlign: 'right' }}>
-                           <button onClick={() => setPhase2ModalOpen({ isOpen: true, feature: 'Manage Tenant' })} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b' }}>Manage</button>
+                           <button onClick={() => setManageTenantModal({ isOpen: true, tenant: t })} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b' }}>Manage</button>
                         </td>
                       </tr>
                     ))}
@@ -688,7 +685,49 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
             </div>
           )}
 
-          {activeTab !== 'Overview' && activeTab !== 'Tenants' && activeTab !== 'Transactions' && activeTab !== 'Reports' && activeTab !== 'AuditLogs' && (
+          {activeTab === 'Subscriptions' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem', color: '#1e293b' }}>Subscription Management</h2>
+                  <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Manage SaaS billing plans for all active tenants.</p>
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', flex: 1 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Tenant Name</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Plan Tier</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Monthly Fee</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Status</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500, textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allTenants.map((t: any) => (
+                      <tr key={`sub-${t.id}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 600 }}>{t.name}</td>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#64748b' }}>
+                          <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: t.plan === 'Enterprise' ? '#eff6ff' : t.plan === 'Professional' ? '#f3e8ff' : '#d1fae5', color: t.plan === 'Enterprise' ? '#3b82f6' : t.plan === 'Professional' ? '#a855f7' : '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>{t.plan}</span>
+                        </td>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', color: '#1e293b', fontWeight: 500 }}>{t.revenue}</td>
+                        <td style={{ padding: '16px 8px', fontSize: '0.85rem', fontWeight: 500 }}>
+                          <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: '#d1fae5', color: '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>Active</span>
+                        </td>
+                        <td style={{ padding: '16px 8px', color: '#94a3b8', textAlign: 'right' }}>
+                           <button onClick={() => setManageSubModal({ isOpen: true, tenant: t })} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b' }}>Manage Plan</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab !== 'Overview' && activeTab !== 'Tenants' && activeTab !== 'Subscriptions' && activeTab !== 'Transactions' && activeTab !== 'Reports' && activeTab !== 'AuditLogs' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '400px', color: '#64748b' }}>
               <Settings size={48} color="#e2e8f0" style={{ marginBottom: '16px' }} />
               <h2 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>{activeTab} Module</h2>
@@ -732,12 +771,105 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
               >
                 <option value="Enterprise">Enterprise (Dedicated Schema)</option>
                 <option value="Professional">Professional (Shared Schema)</option>
+                <option value="Starter">Starter (Basic Schema)</option>
               </select>
             </div>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button onClick={() => setIsTenantModalOpen(false)} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', fontWeight: 500 }}>Cancel</button>
               <button onClick={handleCreateTenant} style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: 500 }}>Create Tenant</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Tenant Modal */}
+      {manageTenantModal.isOpen && manageTenantModal.tenant && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '12px', width: '450px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <div>
+                <h2 style={{ margin: '0 0 4px 0', fontSize: '1.25rem' }}>Manage Tenant</h2>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>ID: {manageTenantModal.tenant.id}</p>
+              </div>
+              <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: manageTenantModal.tenant.status === 'Active' ? '#d1fae5' : '#fee2e2', color: manageTenantModal.tenant.status === 'Active' ? '#10b981' : '#ef4444', fontSize: '0.75rem', fontWeight: 600 }}>{manageTenantModal.tenant.status}</span>
+            </div>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>Tenant Name</label>
+              <input 
+                type="text" 
+                defaultValue={manageTenantModal.tenant.name}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.9rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '24px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Active Users</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>{manageTenantModal.tenant.users}</div>
+              </div>
+              <div style={{ width: '1px', backgroundColor: '#e2e8f0' }}></div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Integration Status</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle2 size={16} color="#10b981" /> Healthy</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'space-between' }}>
+              <button onClick={() => setManageTenantModal({ isOpen: false, tenant: null })} style={{ padding: '8px 16px', border: '1px solid #ef4444', borderRadius: '6px', backgroundColor: 'white', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Suspend Tenant</button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => setManageTenantModal({ isOpen: false, tenant: null })} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', fontWeight: 500 }}>Cancel</button>
+                <button onClick={() => setManageTenantModal({ isOpen: false, tenant: null })} style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: 500 }}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Subscription Modal */}
+      {manageSubModal.isOpen && manageSubModal.tenant && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '12px', width: '500px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+            <h2 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>Manage Subscription</h2>
+            <p style={{ margin: '0 0 24px 0', color: '#64748b', fontSize: '0.9rem' }}>Modifying billing plan for <strong>{manageSubModal.tenant.name}</strong></p>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>Select Plan Tier</label>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: manageSubModal.tenant.plan === 'Starter' ? '2px solid #10b981' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', backgroundColor: manageSubModal.tenant.plan === 'Starter' ? '#f0fdf4' : 'white' }}>
+                  <input type="radio" name="plan" value="Starter" defaultChecked={manageSubModal.tenant.plan === 'Starter'} style={{ margin: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: '#1e293b' }}>Starter</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Standard schema, basic features.</div>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#1e293b' }}>₹900/mo</div>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: manageSubModal.tenant.plan === 'Professional' ? '2px solid #a855f7' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', backgroundColor: manageSubModal.tenant.plan === 'Professional' ? '#faf5ff' : 'white' }}>
+                  <input type="radio" name="plan" value="Professional" defaultChecked={manageSubModal.tenant.plan === 'Professional'} style={{ margin: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: '#1e293b' }}>Professional</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>High sensitivity schema routing.</div>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#1e293b' }}>₹9,900/mo</div>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: manageSubModal.tenant.plan === 'Enterprise' ? '2px solid #3b82f6' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', backgroundColor: manageSubModal.tenant.plan === 'Enterprise' ? '#eff6ff' : 'white' }}>
+                  <input type="radio" name="plan" value="Enterprise" defaultChecked={manageSubModal.tenant.plan === 'Enterprise'} style={{ margin: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: '#1e293b' }}>Enterprise</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Dedicated database instance.</div>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#1e293b' }}>₹49,900/mo</div>
+                </label>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+              <button onClick={() => setManageSubModal({ isOpen: false, tenant: null })} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', fontWeight: 500 }}>Cancel</button>
+              <button onClick={() => setManageSubModal({ isOpen: false, tenant: null })} style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: 500 }}>Confirm Change</button>
             </div>
           </div>
         </div>
