@@ -106,6 +106,24 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
     }
   };
 
+  const handleChangePlan = async () => {
+    if (!manageSubModal.tenant) return;
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/admin/tenants/${manageSubModal.tenant.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ plan: manageSubModal.tenant.plan })
+      });
+      setManageSubModal({ isOpen: false, tenant: null });
+      fetchData();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleExportCSV = () => {
     if (!data || !data.allTenants) return;
     const headers = ['ID', 'Name', 'Plan', 'Users', 'Status', 'Revenue'];
@@ -711,7 +729,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                           <span style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: '#d1fae5', color: '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>Active</span>
                         </td>
                         <td style={{ padding: '16px 8px', color: '#94a3b8', textAlign: 'right' }}>
-                           <button onClick={() => setManageSubModal({ isOpen: true, tenant: t })} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b' }}>Manage Plan</button>
+                           <button onClick={(e) => { e.stopPropagation(); setManageSubModal({ isOpen: true, tenant: t }); }} style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500, color: '#1e293b' }}>Manage Plan</button>
                         </td>
                       </tr>
                     ))}
@@ -833,7 +851,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: manageSubModal.tenant.plan === 'Starter' ? '2px solid #10b981' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', backgroundColor: manageSubModal.tenant.plan === 'Starter' ? '#f0fdf4' : 'white' }}>
-                  <input type="radio" name="plan" value="Starter" defaultChecked={manageSubModal.tenant.plan === 'Starter'} style={{ margin: 0 }} />
+                  <input type="radio" name="plan" value="Starter" checked={manageSubModal.tenant.plan === 'Starter'} onChange={() => setManageSubModal({ ...manageSubModal, tenant: { ...manageSubModal.tenant, plan: 'Starter' } })} style={{ margin: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, color: '#1e293b' }}>Starter</div>
                     <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Standard schema, basic features.</div>
@@ -842,7 +860,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                 </label>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: manageSubModal.tenant.plan === 'Professional' ? '2px solid #a855f7' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', backgroundColor: manageSubModal.tenant.plan === 'Professional' ? '#faf5ff' : 'white' }}>
-                  <input type="radio" name="plan" value="Professional" defaultChecked={manageSubModal.tenant.plan === 'Professional'} style={{ margin: 0 }} />
+                  <input type="radio" name="plan" value="Professional" checked={manageSubModal.tenant.plan === 'Professional'} onChange={() => setManageSubModal({ ...manageSubModal, tenant: { ...manageSubModal.tenant, plan: 'Professional' } })} style={{ margin: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, color: '#1e293b' }}>Professional</div>
                     <div style={{ fontSize: '0.8rem', color: '#64748b' }}>High sensitivity schema routing.</div>
@@ -851,7 +869,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                 </label>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: manageSubModal.tenant.plan === 'Enterprise' ? '2px solid #3b82f6' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', backgroundColor: manageSubModal.tenant.plan === 'Enterprise' ? '#eff6ff' : 'white' }}>
-                  <input type="radio" name="plan" value="Enterprise" defaultChecked={manageSubModal.tenant.plan === 'Enterprise'} style={{ margin: 0 }} />
+                  <input type="radio" name="plan" value="Enterprise" checked={manageSubModal.tenant.plan === 'Enterprise'} onChange={() => setManageSubModal({ ...manageSubModal, tenant: { ...manageSubModal.tenant, plan: 'Enterprise' } })} style={{ margin: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, color: '#1e293b' }}>Enterprise</div>
                     <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Dedicated database instance.</div>
@@ -863,7 +881,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
               <button onClick={() => setManageSubModal({ isOpen: false, tenant: null })} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', fontWeight: 500 }}>Cancel</button>
-              <button onClick={() => setManageSubModal({ isOpen: false, tenant: null })} style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: 500 }}>Confirm Change</button>
+              <button onClick={handleChangePlan} style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: 500 }}>Confirm Change</button>
             </div>
           </div>
         </div>

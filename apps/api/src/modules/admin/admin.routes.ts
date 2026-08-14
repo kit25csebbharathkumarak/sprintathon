@@ -221,4 +221,26 @@ export async function adminRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ error: e.message });
     }
   });
+
+  // PATCH /api/v1/admin/tenants/:id
+  fastify.patch('/tenants/:id', async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const { plan } = request.body as { plan: string };
+      
+      let routingStrategy = 'SHARED_SCHEMA';
+      if (plan === 'Enterprise') routingStrategy = 'ISOLATED_DATABASE';
+      else if (plan === 'Professional') routingStrategy = 'ISOLATED_SCHEMA';
+
+      const tenant = await prisma.tenant.update({
+        where: { id },
+        data: { routingStrategy }
+      });
+
+      return reply.send({ success: true, tenant });
+    } catch (e: any) {
+      fastify.log.error(e);
+      return reply.status(500).send({ error: e.message });
+    }
+  });
 }
