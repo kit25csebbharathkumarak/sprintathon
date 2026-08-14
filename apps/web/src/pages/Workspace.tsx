@@ -29,6 +29,7 @@ interface Tenant {
   id: string;
   name: string;
   routingStrategy?: string;
+  routingReason?: string;
   dataSensitivity?: string;
 }
 
