@@ -12,40 +12,25 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const totalTenants = await prisma.tenant.count();
       const totalUsers = await prisma.user.count();
       
-      const expensesAggr = await prisma.expense.aggregate({
-        _sum: { amount: true },
-        _count: { id: true }
-      });
-      const totalRevenue = expensesAggr._sum.amount || 0;
-      const expensesTracked = expensesAggr._count.id || 0;
-
-      const invoicesAggr = await prisma.vendor.aggregate({
-        _sum: { invoices: true }
-      });
-      const invoicesGenerated = invoicesAggr._sum.invoices || 0;
-
-      // Real Data: Top 5 Tenants by Revenue
-      const topTenantsDataRaw = await prisma.expense.groupBy({
-        by: ['tenantId'],
-        _sum: { amount: true },
-        orderBy: { _sum: { amount: 'desc' } },
-        take: 5
-      });
-
-      const topTenantsColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
-      const topTenants = await Promise.all(topTenantsDataRaw.map(async (t, i) => {
-        const tenant = await prisma.tenant.findUnique({ where: { id: t.tenantId }});
-        return {
-          name: tenant?.name || 'Unknown',
-          value: t._sum.amount || 0,
-          color: topTenantsColors[i % topTenantsColors.length]
-        };
-      }));
-
       // Subscription Overview (DEDICATED vs SHARED)
       const dedicatedCount = await prisma.tenant.count({ where: { routingStrategy: 'DEDICATED' }});
       const sharedCount = await prisma.tenant.count({ where: { routingStrategy: 'SHARED' }});
-      
+
+      // Calculate mock SaaS metrics instead of internal tenant expenses
+      const totalRevenue = (dedicatedCount * 49900) + (sharedCount * 9900);
+      const expensesTracked = dedicatedCount + sharedCount; // Active Subscriptions
+      const invoicesGenerated = dedicatedCount + sharedCount; 
+
+      // Mock top tenants by SaaS subscription value
+      const allTenantsList = await prisma.tenant.findMany({ take: 5 });
+      const topTenantsColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+      const topTenants = allTenantsList.map((t, i) => ({
+        name: t.name,
+        value: t.routingStrategy === 'DEDICATED' ? 49900 : 9900,
+        color: topTenantsColors[i % topTenantsColors.length]
+      })).sort((a, b) => b.value - a.value);
+
+
       const subscriptionData = [
         { name: 'Enterprise', value: dedicatedCount, percentage: totalTenants > 0 ? `${Math.round(dedicatedCount/totalTenants*100)}%` : '0%', color: '#3b82f6' },
         { name: 'Professional', value: sharedCount, percentage: totalTenants > 0 ? `${Math.round(sharedCount/totalTenants*100)}%` : '0%', color: '#8b5cf6' },
@@ -72,17 +57,17 @@ export async function adminRoutes(fastify: FastifyInstance) {
         include: { _count: { select: { users: true } } }
       });
 
-      const allTenants = await Promise.all(allTenantsList.map(async (t) => {
-        const tExpenses = await prisma.expense.aggregate({ where: { tenantId: t.id }, _sum: { amount: true } });
+      const allTenants = allTenantsList.map((t) => {
+        const subFee = t.routingStrategy === 'DEDICATED' ? 49900 : 9900;
         return {
           id: t.id,
           name: t.name,
           plan: t.routingStrategy === 'DEDICATED' ? 'Enterprise' : 'Professional',
           users: t._count.users,
           status: 'Active',
-          revenue: `₹${(tExpenses._sum.amount || 0).toLocaleString()}`
+          revenue: `₹${subFee.toLocaleString()}/mo`
         };
-      }));
+      });
 
       // Revenue Overview Data (Mocking a 7-day trend since there might not be enough historical expense data yet)
       const revenueData = [

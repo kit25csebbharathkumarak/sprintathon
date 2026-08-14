@@ -264,9 +264,9 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                 <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <FileText size={20} color="#10b981" />
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Total Revenue Tracked</div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>SaaS MRR</div>
               </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>₹{totalRevenue.toLocaleString()}</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>₹{totalRevenue.toLocaleString()}/mo</div>
             </div>
 
             <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
@@ -274,7 +274,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                 <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Activity size={20} color="#a855f7" />
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Expenses Tracked</div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Active Subscriptions</div>
               </div>
               <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>{expensesTracked}</div>
             </div>
@@ -296,7 +296,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
             {/* Revenue Overview */}
             <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>Revenue Overview</h3>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>SaaS Subscription Revenue</h3>
               </div>
               <div style={{ height: '240px' }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -318,7 +318,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
 
             {/* Top 5 Tenants */}
             <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 24px 0' }}>Top Tenants by Tracked Expense</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: '0 0 24px 0' }}>Top Tenants by Subscription Plan</h3>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ position: 'relative', width: '180px', height: '180px' }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -531,7 +531,7 @@ export default function SuperAdminPortal({ onLogout }: { onLogout: () => void })
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Plan Tier</th>
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Active Users</th>
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Status</th>
-                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Total Tracked Spend</th>
+                      <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Subscription Fee</th>
                       <th style={{ padding: '12px 8px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500, textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
